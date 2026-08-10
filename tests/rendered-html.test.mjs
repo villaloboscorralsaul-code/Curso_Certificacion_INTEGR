@@ -75,6 +75,15 @@ test("organizes practice for classroom presentation", async () => {
   assert.match(practice, /Resolver/);
 });
 
+test("keeps debate readable for projection", async () => {
+  const [debateCss, layout] = await Promise.all([
+    readFile(new URL("../app/debate-legibility.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(debateCss, /optimized for projection/);
+  assert.match(layout, /debate-legibility\.css/);
+});
+
 test("local preview restarts when a build changes asset hashes", async () => {
   const [server, supervisor] = await Promise.all([
     readFile(new URL("../scripts/local-server.mjs", import.meta.url), "utf8"),
