@@ -139,13 +139,16 @@ export default function Home() {
   const [caseChoice, setCaseChoice] = useState<number | null>(null);
   const [caseAnswers, setCaseAnswers] = useState<Record<string, number>>({});
   const [speaking, setSpeaking] = useState(false);
+  const [immersive, setImmersive] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem("integr-course-progress");
     if (saved) setCompleted(JSON.parse(saved));
     const savedCases = window.localStorage.getItem("integr-case-progress");
     if (savedCases) setCaseAnswers(JSON.parse(savedCases));
-    return () => window.speechSynthesis?.cancel();
+    const syncFullscreen = () => setImmersive(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => { window.speechSynthesis?.cancel(); document.removeEventListener("fullscreenchange", syncFullscreen); };
   }, []);
 
   const progress = Math.round((completed.length / modules.length) * 75);
@@ -213,6 +216,11 @@ export default function Home() {
     const next = { ...caseAnswers, [activeCase.number]: index };
     setCaseAnswers(next);
     window.localStorage.setItem("integr-case-progress", JSON.stringify(next));
+  }
+
+  async function toggleImmersive() {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
   }
 
   return (
@@ -310,6 +318,12 @@ export default function Home() {
       </section>
 
       <footer><img src="/integr-logo.png" alt="INTEGR" /><p>Curso interactivo basado en “Examen de Certificación”.</p><div className="credits">Imágenes educativas: {modules.map((m, i) => <span key={m.id}><a href={m.sourceUrl} target="_blank" rel="noreferrer">{m.source}</a>{i < modules.length - 1 ? " · " : ""}</span>)}</div></footer>
+
+      <div className="experience-dock" aria-label="Controles de experiencia">
+        <span><i /> LOCAL · LISTO</span>
+        <button onClick={() => document.querySelector("#casos")?.scrollIntoView({ behavior: "smooth" })}>Continuar casos</button>
+        <button onClick={toggleImmersive}>{immersive ? "Salir de pantalla completa" : "⛶ Modo inmersivo"}</button>
+      </div>
 
       {videoOpen && <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Video original"><div className="video-modal"><button className="close" onClick={() => setVideoOpen(false)} aria-label="Cerrar">×</button><div className="modal-title"><span>REFERENCIA ORIGINAL</span><h2>Examen de Certificación</h2></div><video src="/examen-certificacion.mp4" controls autoPlay /></div></div>}
 
