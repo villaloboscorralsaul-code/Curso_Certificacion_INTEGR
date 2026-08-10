@@ -47,4 +47,17 @@ test("includes the guided debate facilitation tools", async () => {
   assert.match(debate, /Pantalla completa/);
   assert.match(debate, /integr-debate-notes/);
   assert.match(debate, /POSTURA PRELIMINAR DEL GRUPO/);
+  assert.match(debate, /Guía para dirigir una conversación útil/);
+});
+
+test("provides plain-language and contextual learning support", async () => {
+  const [page, coach] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/LearningCoach.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /EN PALABRAS SIMPLES/);
+  assert.match(page, /Tres errores que debes evitar/);
+  assert.match(page, /IDEA CLAVE/);
+  assert.match(coach, /¿Qué hago aquí\?/);
+  assert.match(coach, /integr-large-text/);
 });
