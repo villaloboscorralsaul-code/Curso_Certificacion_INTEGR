@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
+import DayTwoLanding from "./DayTwoLanding";
 
-type Tab = "teoria" | "video" | "practica" | "debate";
+type Tab = "overview" | "teoria" | "video" | "practica" | "debate";
 const cases = [
   {title:"El motor no arranca", text:"El HMI indica MOTOR NOT READY. La ruta del unifilar es 480 V → MCC-02 → CB-08 → VFD-08 → motor M-204.", ask:"¿Dónde comenzarías y qué verificarías antes de abrir el gabinete?", options:["Ir directo al motor y cambiarlo","Seguir fuente → protección → control → carga, con autorización y verificación","Resetear el VFD sin consultar el diagrama"], answer:1},
   {title:"El breaker vuelve a disparar", text:"Una banda de 460 V consume 21.9 A en las tres fases; su placa indica 18 A y el operador reporta que se escucha pesada.", ask:"¿Qué hipótesis tiene más evidencia?", options:["Aumentar el breaker","Sobrecarga mecánica que debe investigarse","Ignorar el disparo porque la banda aún gira"], answer:1},
@@ -11,9 +12,10 @@ const cases = [
 ];
 
 export default function DayTwoExperience({ onBack }: { onBack:()=>void }) {
- const [tab,setTab]=useState<Tab>("teoria"); const [caseIndex,setCaseIndex]=useState(0); const [choice,setChoice]=useState<number|null>(null); const [sound,setSound]=useState(true);
+ const [tab,setTab]=useState<Tab>("overview"); const [caseIndex,setCaseIndex]=useState(0); const [choice,setChoice]=useState<number|null>(null); const [sound,setSound]=useState(true);
  const speak=()=>{if(!sound||!("speechSynthesis" in window))return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(tab==="teoria"?"Sistemas eléctricos industriales. Sigue la energía desde la fuente hasta la carga.":tab==="practica"?"Práctica guiada. Lee el diagrama unifilar, identifica protecciones y formula una ruta segura de diagnóstico.":c.title);u.lang="es-MX";u.rate=.92;speechSynthesis.speak(u)};
  const nav=(next:Tab)=>{setTab(next);setChoice(null);}; const c=cases[caseIndex];
+ if(tab==="overview") return <DayTwoLanding onOpen={nav} onBack={onBack}/>;
  return <div className="page-content day2-page">
   <header className="page-intro day2-intro"><span className="big-index">02</span><div className="page-intro-copy"><small>MÓDULO II · DÍA 2 · 9 HORAS</small><h1>Sistemas eléctricos <em>industriales</em></h1><p>Comprende cómo llega, se protege y se diagnostica la energía antes de intervenir una máquina.</p></div><aside className="page-intro-meta"><span>RUTA DEL DÍA</span><b>4 experiencias</b><small>Teoría · video · práctica · debate</small><button className="day2-audio" onClick={()=>{setSound(!sound);speak()}}>{sound?"▶ Escuchar":"🔇 Audio apagado"}</button></aside></header>
   <div className="day2-tabs" role="tablist">{([["teoria","01","Teoría"],["video","02","Video-lección"],["practica","03","Práctica"],["debate","04","Debate"]] as const).map(([id,n,label])=><button key={id} className={tab===id?"active":""} onClick={()=>nav(id)}><span>{n}</span><b>{label}</b></button>)}</div>
