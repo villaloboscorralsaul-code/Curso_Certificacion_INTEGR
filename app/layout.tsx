@@ -6,6 +6,7 @@ import "./debate.css";
 import "./learning-coach.css";
 import "./learning-extras.css";
 import "./practice-experience.css";
+import "./design-refresh.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
