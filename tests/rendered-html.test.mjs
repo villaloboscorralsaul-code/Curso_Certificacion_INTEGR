@@ -25,8 +25,9 @@ test("renders the five-day course administrator", async () => {
 });
 
 test("keeps the learning experiences and source material wired", async () => {
-  const [page, layout, sourcePdf, socialCard] = await Promise.all([
+  const [page, practice, layout, sourcePdf, socialCard] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/PracticeExperience.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../public/modulo-1-dia-1.pdf", import.meta.url)),
     readFile(new URL("../public/og.png", import.meta.url)),
@@ -34,7 +35,7 @@ test("keeps the learning experiences and source material wired", async () => {
   assert.match(page, /type Stage = "caso" \| "debate" \| "incisos"/);
   assert.match(page, /integr-day1-completed/);
   assert.match(page, /speechSynthesis/);
-  assert.match(page, /Ppérdida = I² × Rtotal/);
+  assert.match(practice, /P pérdida = I²/);
   assert.match(layout, /og\.png/);
   assert.ok(sourcePdf.byteLength > 1_000_000);
   assert.ok(socialCard.byteLength > 100_000);
@@ -51,20 +52,36 @@ test("includes the guided debate facilitation tools", async () => {
 });
 
 test("provides plain-language and contextual learning support", async () => {
-  const [page, coach] = await Promise.all([
+  const [page, practice, coach] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/PracticeExperience.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/LearningCoach.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(page, /EN PALABRAS SIMPLES/);
-  assert.match(page, /Tres errores que debes evitar/);
+  assert.match(practice, /EN PALABRAS SIMPLES/);
   assert.match(page, /IDEA CLAVE/);
   assert.match(coach, /¿Qué hago aquí\?/);
   assert.match(coach, /integr-large-text/);
 });
 
-test("local server reloads the worker when a new build changes asset hashes", async () => {
-  const server = await readFile(new URL("../scripts/local-server.mjs", import.meta.url), "utf8");
-  assert.match(server, /stats\.mtimeMs !== workerModified/);
-  assert.match(server, /compilación local sincronizada/);
+test("organizes practice for classroom presentation", async () => {
+  const practice = await readFile(new URL("../app/PracticeExperience.tsx", import.meta.url), "utf8");
+  assert.match(practice, /Vista para exponer/);
+  assert.match(practice, /Pantalla completa/);
+  assert.match(practice, /ArrowRight/);
+  assert.match(practice, /Observar/);
+  assert.match(practice, /Calcular/);
+  assert.match(practice, /Interpretar/);
+  assert.match(practice, /Resolver/);
+});
+
+test("local preview restarts when a build changes asset hashes", async () => {
+  const [server, supervisor] = await Promise.all([
+    readFile(new URL("../scripts/local-server.mjs", import.meta.url), "utf8"),
+    readFile(new URL("../scripts/local-dev.mjs", import.meta.url), "utf8"),
+  ]);
+  assert.match(supervisor, /manifest\.json/);
+  assert.match(supervisor, /restartServer/);
+  assert.match(supervisor, /setInterval/);
   assert.match(server, /cache-control", "no-store/);
 });
