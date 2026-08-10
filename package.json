@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "vinext build",
+    "build": "node scripts/prepare-video.mjs && vinext build",
     "start": "vinext start",
     "local": "node scripts/local-dev.mjs",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",

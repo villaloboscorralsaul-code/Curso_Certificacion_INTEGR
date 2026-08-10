@@ -84,6 +84,26 @@ test("keeps debate readable for projection", async () => {
   assert.match(layout, /debate-legibility\.css/);
 });
 
+test("wires the industrial electricity lesson video", async () => {
+  const [page, video] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../public/electricidad-industrial.mp4", import.meta.url)),
+  ]);
+  assert.match(page, /electricidad-industrial\.mp4/);
+  assert.match(page, /lesson-video-feature/);
+  assert.ok(video.byteLength > 10_000_000);
+});
+
+test("rebuilds the lesson video from repository-safe parts", async () => {
+  const [packageJson, prep] = await Promise.all([
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../scripts/prepare-video.mjs", import.meta.url), "utf8"),
+  ]);
+  assert.match(packageJson, /prepare-video\.mjs/);
+  assert.match(prep, /electricidad-industrial-parts/);
+  assert.match(prep, /createReadStream/);
+});
+
 test("local preview restarts when a build changes asset hashes", async () => {
   const [server, supervisor] = await Promise.all([
     readFile(new URL("../scripts/local-server.mjs", import.meta.url), "utf8"),
