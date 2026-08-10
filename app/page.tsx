@@ -1,336 +1,127 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-type Module = {
-  id: string;
-  number: string;
-  title: string;
-  eyebrow: string;
-  duration: string;
-  icon: string;
-  description: string;
-  lessonTitle: string;
-  lessonCopy: string;
-  bullets: string[];
-  image: string;
-  imageAlt: string;
-  source: string;
-  sourceUrl: string;
-};
+type View = "inicio" | "teoria" | "video" | "practica" | "debate";
+type Stage = "caso" | "debate" | "incisos";
+type Calculator = "ohm" | "potencia" | "eficiencia" | "perdidas";
 
-const modules: Module[] = [
-  {
-    id: "electricidad",
-    number: "01",
-    title: "Electricidad",
-    eyebrow: "Diagnóstico + seguridad",
-    duration: "12 min",
-    icon: "⚡",
-    description: "Aislamiento de motores, uso del megóhmetro y protección frente al arco eléctrico.",
-    lessonTitle: "Mide el aislamiento antes de energizar",
-    lessonCopy: "El megóhmetro aplica una tensión de prueba controlada y mide resistencias muy altas. Así detecta humedad, contaminación o degradación antes de que aparezca una falla.",
-    bullets: ["Aísla y desenergiza el equipo", "Verifica ausencia de tensión", "Descarga el devanado al terminar"],
-    image: "https://www.vpowerjsc.com/Data/Sites/1/media/chia-se-kt/dien-tro-cach-dien-motor_thumb.jpg",
-    imageAlt: "Técnico realizando una prueba de aislamiento en un motor industrial",
-    source: "VPower — prueba de aislamiento",
-    sourceUrl: "https://www.vpowerjsc.com/chia-se-kien-thuc/kien-thuc-bao-tri-chan-doan/ket-hop-bao-tri-dinh-ky-pm-va-bao-tri-chan-doan-pdm-cho-dong-co-dien",
-  },
-  {
-    id: "mecanica",
-    number: "02",
-    title: "Sistemas mecánicos",
-    eyebrow: "Condición + causa raíz",
-    duration: "10 min",
-    icon: "⚙",
-    description: "Relaciona vibración, temperatura, alineación y consumo de corriente en bombas y motores.",
-    lessonTitle: "La desalineación deja una firma",
-    lessonCopy: "Cuando los ejes no comparten el mismo centro, aumentan la vibración, la carga radial, el desgaste de rodamientos y la demanda de corriente.",
-    bullets: ["Compara vibración axial y radial", "Revisa acoplamiento y base", "Alinea antes de sustituir piezas"],
-    image: "https://control.com/uploads/thumbnails/image3_insulation_testing.jpg",
-    imageAlt: "Mantenimiento y medición en equipo industrial",
-    source: "Control.com — pruebas industriales",
-    sourceUrl: "https://control.com/technical-articles/insulation-testing-with-resistance-meters/",
-  },
-  {
-    id: "electronica",
-    number: "03",
-    title: "Electrónica industrial",
-    eyebrow: "Sensado + retroalimentación",
-    duration: "11 min",
-    icon: "◉",
-    description: "Comprende cómo sensores y encoders convierten el proceso físico en decisiones de control.",
-    lessonTitle: "Del movimiento a una señal útil",
-    lessonCopy: "Un sensor convierte una variable física en una señal. El encoder añade pulsos de posición y velocidad para cerrar el lazo de control con precisión.",
-    bullets: ["Variable física → sensor", "Señal → controlador", "Orden → actuador → retroalimentación"],
-    image: "https://labsiz.ru/upload/iblock/aae/cgrogqmcpke3vzfmdpa83ur79ls66wz1.jpg",
-    imageAlt: "Instrumentación de medición en una instalación industrial",
-    source: "Labsiz — instrumentación industrial",
-    sourceUrl: "https://labsiz.ru/poleznye-stati/izmerenie_soprotivleniya_izolyatsii_megaommetrom",
-  },
+const days = [
+  { day: 1, title: "Fundamentos eléctricos", hours: "6 h teoría · 3 h práctica", status: "Publicado", active: true },
+  { day: 2, title: "Sistemas eléctricos industriales", hours: "6 h teoría · 3 h práctica", status: "Programado" },
+  { day: 3, title: "Instrumentación y seguridad", hours: "5 h teoría · 4 h práctica", status: "Programado" },
+  { day: 4, title: "Sistemas mecánicos", hours: "6 h teoría · 3 h práctica", status: "Programado" },
+  { day: 5, title: "Electrónica industrial", hours: "3 h teoría · 3 h práctica", status: "Programado" },
 ];
 
-const questions = [
-  { q: "¿Qué equipo verifica el aislamiento de un motor?", options: ["Cámara térmica", "Probador", "Megóhmetro", "Amperímetro"], answer: 2, why: "El megóhmetro aplica tensión DC de prueba y mide resistencia de aislamiento en MΩ o GΩ." },
-  { q: "¿Cuál es la función principal del traje Arc Flash?", options: ["Evitar toda descarga", "Proteger de energía térmica y quemaduras", "Mejorar visibilidad", "Crear puesta a tierra"], answer: 1, why: "El EPP Arc Flash reduce la exposición a calor, plasma y partículas; no elimina el peligro." },
-  { q: "Una bomba vibra, se calienta y consume más corriente. ¿Qué causa debes investigar primero?", options: ["Falta de tierra", "Desalineación", "Color del lubricante", "Ventiladores cercanos"], answer: 1, why: "La desalineación transmite cargas anormales y suele elevar simultáneamente vibración, temperatura y corriente." },
-  { q: "¿Cuál es la función principal de un sensor?", options: ["Generar potencia", "Evitar todos los picos", "Medir variables físicas", "Aumentar velocidad"], answer: 2, why: "El sensor mide una variable y la transforma en una señal interpretable por el sistema de control." },
-  { q: "¿Qué dispositivo retroalimenta posición y velocidad?", options: ["Reductor", "Voltímetro", "Canalización", "Encoder"], answer: 3, why: "El encoder entrega pulsos o palabras digitales que representan desplazamiento, posición y velocidad." },
-  { q: "¿Cómo se integra la seguridad entre electricidad, mecánica y electrónica?", options: ["Cada área trabaja aislada", "Solo con más sensores", "Con análisis de riesgos, bloqueo y comunicación coordinada", "Aumentando la velocidad"], answer: 2, why: "La seguridad sistémica exige riesgo compartido, LOTO, permisos, pruebas y comunicación entre disciplinas." },
+const sections: { id: View; label: string; short: string; detail: string; icon: string }[] = [
+  { id: "teoria", label: "Teoría", short: "Manual", detail: "8 conceptos · PDF incluido", icon: "01" },
+  { id: "video", label: "Video-lección", short: "Multimedia", detail: "Narración y animaciones", icon: "02" },
+  { id: "practica", label: "Práctica", short: "Laboratorio", detail: "4 calculadoras guiadas", icon: "03" },
+  { id: "debate", label: "Debate", short: "Decisiones", detail: "5 casos progresivos", icon: "04" },
 ];
 
-type Dilemma = {
-  number: string;
-  module: "Electricidad" | "Mecánico" | "Electrónica";
-  title: string;
-  setup: string;
-  sides: [string, string];
-  prompt: string;
-  options: string[];
-  answer: number;
-  feedback: string;
-  videoId: string;
-};
-
-const dilemmas: Dilemma[] = [
-  { number:"E-01", module:"Electricidad", title:"Seguridad vs. comodidad", setup:"El traje Arc Flash nivel 4 es caluroso y estorboso. El técnico solo quiere abrir la puerta de un tablero para una inspección visual rápida.", sides:["Exigir el traje completo en toda apertura, sin excepción.","Permitir la inspección rápida sin traje porque no habrá contacto."], prompt:"¿Qué datos deben gobernar la decisión: energía incidente, condición del equipo, distancia, tarea o tiempo de exposición?", options:["Flexibilizar por ser una inspección corta","Usar siempre nivel 4, aunque el estudio indique otra categoría","Aplicar la evaluación de riesgo y el EPP definido para esa tarea y energía incidente"], answer:2, feedback:"La duración no elimina el peligro. La decisión debe salir del análisis de riesgo, límites de aproximación, condición del equipo y EPP definido, no de la comodidad ni de una regla universal sin contexto.", videoId:"xDLKLnVdlWE" },
-  { number:"E-02", module:"Electricidad", title:"Producción vs. punto caliente", setup:"Una cámara termográfica muestra un interruptor principal de baja tensión anormalmente caliente mientras la planta está en plena producción.", sides:["Parar toda la planta inmediatamente.","Poner un ventilador y esperar hasta el fin de semana."], prompt:"Antes de decidir, compara carga, tendencia térmica, temperatura absoluta, criticidad, posibilidad de transferencia y señales de daño.", options:["Ventilar y continuar sin seguimiento","Activar respuesta de emergencia basada en criticidad: reducir carga, aislar o parar de forma controlada","Ignorar la imagen porque el interruptor aún funciona"], answer:1, feedback:"Un ventilador puede ocultar el síntoma. La respuesta correcta se escala con el riesgo: confirmar medición, reducir exposición y ejecutar una parada controlada si la criticidad lo exige.", videoId:"HDppR406W-g" },
-  { number:"E-03", module:"Electricidad", title:"Cables mezclados", setup:"En una planta antigua se usaron colores incorrectos: rojo para tierras, verde para fases y otras combinaciones peligrosas.", sides:["Recablear todo de inmediato, sin evaluar el impacto.","Conservar todo y confiar únicamente en etiquetas nuevas."], prompt:"¿Cómo reduces el riesgo hoy sin crear otro durante una intervención masiva?", options:["Dejarlo igual y avisar verbalmente","Crear un plan por riesgo: identificar, documentar, etiquetar de forma durable y recablear circuitos críticos por etapas","Cambiar solo los cables visibles"], answer:1, feedback:"La corrección debe ser trazable y priorizada. Primero se controla el riesgo y se documenta; después se normaliza por etapas, empezando por protección, tierra y circuitos críticos.", videoId:"HDppR406W-g" },
-  { number:"E-04", module:"Electricidad", title:"Prueba rápida vs. completa", setup:"Para una revisión rutinaria de motor, el equipo quiere omitir el megóhmetro y revisar únicamente continuidad con un multímetro.", sides:["Usar megóhmetro en cada ronda sin importar el contexto.","La continuidad basta para declarar sano el aislamiento."], prompt:"Diferencia continuidad del conductor, resistencia de devanado y resistencia de aislamiento. ¿Qué historial y periodicidad exige el plan?", options:["Usar solo continuidad","Aplicar megóhmetro según el plan preventivo, condición y tendencia, con el motor aislado y descargado","Energizar y observar si dispara"], answer:1, feedback:"El multímetro no sustituye una prueba de aislamiento. La frecuencia debe corresponder al plan y criticidad; el megóhmetro se usa bajo un procedimiento seguro y con tendencias comparables.", videoId:"xDLKLnVdlWE" },
-  { number:"E-05", module:"Electricidad", title:"El interruptor que se dispara", setup:"Un motor se apaga repetidamente porque opera la protección térmica. Producción exige subir la capacidad del interruptor para mantenerlo encendido.", sides:["Aumentar el interruptor para recuperar producción.","Mantenerlo detenido hasta cambiar el motor completo."], prompt:"¿Qué protege el interruptor y qué causas pueden elevar la corriente: sobrecarga, atasco, desalineación, tensión o ventilación?", options:["Subir la protección sin cálculo","Rearmar indefinidamente","Conservar la coordinación de protección, diagnosticar la sobrecorriente y corregir la causa antes de operar"], answer:2, feedback:"Sobredimensionar la protección puede trasladar la falla al cableado o al motor. Primero se verifica carga, corriente, tensión, mecánica y ajuste contra placa y coordinación.", videoId:"xDLKLnVdlWE" },
-  { number:"M-01", module:"Mecánico", title:"Falla hasta romperse", setup:"Motores y bombas pequeñas son baratos. El equipo debate si vale la pena analizar vibración y alineación o sustituirlos cuando fallen.", sides:["Monitorear cada activo con la máxima tecnología.","Dejar que todos fallen porque reemplazarlos es barato."], prompt:"El precio del equipo no es el costo total: considera paro, seguridad, acceso, inventario, efecto en calidad y daño secundario.", options:["Aplicar la misma estrategia a todos","Elegir la estrategia por criticidad y costo total del ciclo de vida","Esperar la falla aunque detenga la línea"], answer:1, feedback:"Run-to-failure puede ser válido en activos no críticos, seguros y con repuesto disponible. La estrategia se decide por consecuencia y costo total, no solo por precio de compra.", videoId:"W5AzPHJrZlk" },
-  { number:"M-02", module:"Mecánico", title:"El mito de más grasa", setup:"Un rodamiento parece reseco, pero el programa indica que aún falta un mes para lubricarlo.", sides:["Agregar grasa por si acaso.","Respetar el calendario aunque existan síntomas nuevos."], prompt:"¿Qué evidencia necesitas: ultrasonido, temperatura, historial, cantidad, tipo de grasa, velocidad y condición de sellos?", options:["Engrasar hasta que salga por los sellos","No tocarlo sin importar la condición","Verificar condición y especificación; lubricar solo con cantidad, tipo y método controlados"], answer:2, feedback:"Tanto falta como exceso de grasa elevan el riesgo. La intervención debe combinar condición real con especificación, evitando contaminar o presurizar los sellos.", videoId:"W5AzPHJrZlk" },
-  { number:"M-03", module:"Mecánico", title:"El fusible mecánico", setup:"El acoplamiento flexible de una banda se rompe cada semana por carga elevada. Proponen instalar uno de acero.", sides:["Poner acero y eliminar la pieza débil.","Aceptar la rotura semanal como protección normal."], prompt:"¿El acoplamiento es un elemento fusible diseñado o está revelando sobrecarga, desalineación, arranques bruscos o selección incorrecta?", options:["Cambiarlo por acero sin cálculo","Investigar causa y torque; seleccionar protección y acoplamiento compatibles con todo el tren","Comprar más coples de plástico"], answer:1, feedback:"Endurecer un componente puede trasladar la falla a la flecha o transmisión. La solución exige conocer torque, factor de servicio, alineación y protección contra sobrecarga.", videoId:"1fqugj_kiyQ" },
-  { number:"M-04", module:"Mecánico", title:"Neumática vs. hidráulica", setup:"Debes diseñar una máquina para empujar cajas de cartón: aire limpio y rápido o aceite con mayor fuerza.", sides:["Neumática por limpieza y simplicidad.","Hidráulica por fuerza y control."], prompt:"Calcula fuerza, velocidad, ciclo, precisión, ruido, eficiencia, limpieza, mantenimiento y consecuencia de una fuga.", options:["Elegir siempre hidráulica porque es más fuerte","Elegir neumática dimensionada si cubre fuerza y ciclo; comparar costo total antes de decidir","Elegir por la tecnología que el proveedor tenga disponible"], answer:1, feedback:"Para cajas ligeras suele favorecerse neumática si satisface fuerza y ciclo, pero la decisión final sale del dimensionamiento, eficiencia y entorno, no de una preferencia absoluta.", videoId:"NHBi_JAi5Jg" },
-  { number:"M-05", module:"Mecánico", title:"¿Láser o vieja escuela?", setup:"Un mecánico experimentado afirma que puede alinear poleas y motores con regla e hilo igual que con un equipo láser.", sides:["Sin láser no existe alineación aceptable.","La experiencia vuelve innecesaria toda medición digital."], prompt:"Define tolerancia requerida, velocidad, criticidad, repetibilidad, documentación y habilidad del ejecutor.", options:["Usar siempre hilo, sin medir tolerancia","Escoger el método que demuestre la tolerancia exigida; usar láser cuando precisión y trazabilidad lo justifiquen","Comprar láser y omitir la revisión de pie suave"], answer:1, feedback:"Regla e hilo pueden servir en trabajos de menor exigencia; el láser aporta precisión y reporte. El criterio es cumplir tolerancia verificada, no defender una herramienta.", videoId:"1fqugj_kiyQ" },
-  { number:"C-01", module:"Electrónica", title:"PLC vs. PC industrial", setup:"El equipo debe elegir entre un PLC robusto y determinista o una PC industrial flexible con interfaces avanzadas.", sides:["PLC: resistente y predecible, pero menos flexible.","PC industrial: potente y visual, pero con mayor complejidad de software."], prompt:"¿La función es control determinista, visualización, datos, visión, seguridad o una mezcla? ¿Qué arquitectura puede separar responsabilidades?", options:["Usar Windows para toda función, incluida seguridad","Elegir por arquitectura: PLC para control determinista y PC para cómputo/HMI cuando aporte valor","Usar PLC siempre, aunque no cubra la aplicación"], answer:1, feedback:"No son rivales universales. Una arquitectura híbrida suele separar control crítico y determinista de analítica, visualización o aplicaciones de alto nivel.", videoId:"C-iMjNnP1go" },
-  { number:"C-02", module:"Electrónica", title:"Puenteo de seguridad", setup:"Un sensor de puerta falla intermitentemente y detiene producción. El repuesto llegará mañana; proponen puentearlo por unas horas.", sides:["Puente temporal con un aviso al operador.","Paro absoluto hasta cambiar el sensor."], prompt:"¿Existe un modo seguro alternativo validado, con reducción de riesgo, autorización, vigilancia y bloqueo del acceso?", options:["Puentear y dejar la máquina en automático","Mantener la función de seguridad; aplicar solo un modo alternativo formalmente evaluado y autorizado, o detener","Puentear si el gerente firma"], answer:1, feedback:"Una firma no elimina el peligro. Nunca se normaliza el bypass: se conserva la función o se utiliza un modo alternativo diseñado, evaluado, controlado y temporal.", videoId:"Ad5s1cSzkX2" },
-  { number:"C-03", module:"Electrónica", title:"Automático vs. manual", setup:"Una máquina tiene tantos sensores que la falla de uno impide operarla. Se propone agregar controles manuales para seguir produciendo.", sides:["Control manual total cuando falle la automatización.","Sin modo manual: cualquier sensor detiene todo."], prompt:"Distingue recuperación, mantenimiento, modo degradado y producción. ¿Qué movimientos requieren velocidad reducida, pulsación mantenida o acceso restringido?", options:["Botones directos que ignoren todas las seguridades","Diseñar modos manuales/degradados con permisos, enclavamientos, límites y diagnóstico","Eliminar sensores para simplificar"], answer:1, feedback:"El modo manual debe ser diseñado, no improvisado. Conserva funciones de seguridad, limita energía y movimiento y deja claro el diagnóstico.", videoId:"Ad5s1cSzkX2" },
-  { number:"C-04", module:"Electrónica", title:"Reparar vs. sustituir", setup:"Se quema una tarjeta interna de un variador de 1 HP. Repararlo tomaría cuatro horas; reemplazarlo es rápido pero genera costo y residuo.", sides:["Reparar siempre para evitar desperdicio.","Desechar siempre porque la electrónica pequeña es barata."], prompt:"Considera seguridad de la reparación, garantía, tiempo de paro, disponibilidad, causa raíz, capacidad de prueba y costo total.", options:["Soldar en campo y energizar sin prueba","Decidir con una matriz de riesgo y costo; reparar solo con competencia, diagnóstico y prueba controlada","Cambiarlo sin investigar por qué falló"], answer:1, feedback:"La decisión depende de riesgo y capacidad real de validar la reparación. Aun al reemplazar, investigar la causa evita quemar el nuevo variador.", videoId:"C-iMjNnP1go" },
-  { number:"C-05", module:"Electrónica", title:"Variador: moda o necesidad", setup:"Proponen instalar variador en todo motor, incluso en cargas que solo encienden y apagan a velocidad fija.", sides:["Todo motor merece variador por modernización.","Ningún motor fijo necesita electrónica adicional."], prompt:"¿La carga requiere velocidad variable, arranque suave, control de proceso o ahorro por leyes de afinidad? Compara pérdidas y complejidad.", options:["Instalarlo siempre para ahorrar energía en el arranque","Usarlo cuando el perfil de carga y control justifique el costo total; si no, elegir un arranque apropiado","Elegirlo solo por tener pantalla"], answer:1, feedback:"El ahorro importante suele venir de reducir velocidad en cargas variables, no solo del arranque. El perfil de operación y el proceso deben justificar la inversión.", videoId:"C-iMjNnP1go" },
+const lessons = [
+  { n: "1.1", title: "Principios de electricidad", text: "La electricidad describe el movimiento y la interacción de cargas. En un circuito cerrado, una diferencia de potencial impulsa corriente a través de una oposición.", tag: "Base conceptual" },
+  { n: "1.2", title: "Voltaje, corriente y resistencia", text: "Voltaje (V) es la fuerza eléctrica; corriente (A), el flujo de carga; resistencia (Ω), la oposición. Ninguna medición aislada cuenta toda la historia.", tag: "Tres magnitudes" },
+  { n: "1.3", title: "Ley de Ohm", text: "V = I × R relaciona las tres magnitudes. Si conoces dos, puedes calcular la tercera y comprobar si una lectura de campo es coherente.", tag: "V = I × R" },
+  { n: "1.4", title: "Corriente alterna y directa", text: "DC mantiene polaridad; AC cambia periódicamente. La industria usa AC para distribución y motores, y DC en control, electrónica y almacenamiento.", tag: "AC vs. DC" },
+  { n: "1.5", title: "Potencia industrial", text: "La potencia activa P realiza trabajo (kW), la reactiva Q sostiene campos (kVAR) y la aparente S representa la demanda total (kVA). Se relacionan como un triángulo.", tag: "P · Q · S" },
+  { n: "1.6", title: "Eficiencia y pérdidas", text: "η = Psalida / Pentrada × 100. La diferencia se pierde principalmente como calor, fricción o efectos electromagnéticos y debe investigarse como tendencia.", tag: "η %" },
+  { n: "1.7", title: "Medición segura", text: "El voltímetro se conecta en paralelo; la corriente se mide en serie o con pinza apropiada. Antes de medir se define categoría, rango, estado del instrumento y EPP.", tag: "V y A" },
+  { n: "1.8", title: "Identificación de sobrecargas", text: "Una corriente mayor a la nominal puede revelar carga mecánica, baja tensión, pérdida de fase, mala ventilación o falla interna. El disparo es un síntoma que protege al sistema.", tag: "Diagnóstico" },
 ];
 
-const videoLibrary = [
-  { id:"xDLKLnVdlWE", tag:"SEGURIDAD ELÉCTRICA", title:"Peligros del Arc Flash", source:"Fluke" },
-  { id:"HDppR406W-g", tag:"TERMOGRAFÍA", title:"Imágenes térmicas en aplicaciones eléctricas", source:"Fluke / TestersAndTools" },
-  { id:"1fqugj_kiyQ", tag:"ALINEACIÓN", title:"Alineación láser de ejes", source:"SKF tool demonstration" },
-  { id:"W5AzPHJrZlk", tag:"RODAMIENTOS", title:"Sistema de rodamientos autoalineables", source:"SKF Group" },
-  { id:"NHBi_JAi5Jg", tag:"FLUID POWER", title:"Hidráulica vs. neumática", source:"Material técnico en español" },
-  { id:"C-iMjNnP1go", tag:"AUTOMATIZACIÓN", title:"PC industrial SIMATIC", source:"Siemens" },
+const videoSlides = [
+  { title: "La electricidad es una relación", kicker: "Voltaje · Corriente · Resistencia", copy: "Una fuente crea diferencia de potencial. El circuito permite flujo. La carga se opone y transforma energía.", visual: "circuit" },
+  { title: "Ley de Ohm", kicker: "V = I × R", copy: "Con dos magnitudes puedes encontrar la tercera. Cambiar resistencia o voltaje modifica la corriente del circuito.", visual: "ohm" },
+  { title: "AC y DC", kicker: "Dos comportamientos, usos distintos", copy: "La señal DC conserva polaridad. La AC alterna y permite distribuir energía eficientemente en la planta.", visual: "wave" },
+  { title: "El triángulo de potencia", kicker: "P² + Q² = S²", copy: "La potencia activa produce trabajo; la reactiva sostiene campos; la aparente dimensiona la infraestructura.", visual: "power" },
+  { title: "Medir para diagnosticar", kicker: "Dato + contexto + tendencia", copy: "Compara placa, carga, tensión, corriente, eficiencia y temperatura antes de decidir una intervención.", visual: "meter" },
 ];
 
-function ProgressRing({ value }: { value: number }) {
-  return <div className="progress-ring" style={{ "--progress": `${value * 3.6}deg` } as React.CSSProperties}><span>{value}%</span></div>;
+const debates = [
+  { code: "D1-01", title: "El motor que pide más corriente", case: "Un motor de banda marca 9.8 A en operación, aunque su placa indica 8.2 A. Producción afirma que mientras siga girando no hay problema.", prompt: "Debatan qué significa esa diferencia. ¿Es una falla eléctrica, una carga mecánica o una condición normal? ¿Qué dato falta antes de detener?", lenses: ["Riesgo para el devanado", "Carga real de la banda", "Tensión entre fases", "Tiempo y tendencia"], options: ["Aumentar el ajuste de protección para evitar paros.", "Comparar tensión, corriente por fase y carga; corregir la causa antes de cambiar protección.", "Esperar hasta que el motor se detenga por sí solo."], answer: 1, feedback: "La corriente es evidencia, no diagnóstico completo. Debe compararse con placa, balance de tensión, carga y tendencia. Cambiar la protección puede eliminar la defensa del motor sin eliminar la causa." },
+  { code: "D1-02", title: "¿Un multímetro en cualquier punto?", case: "Un técnico nuevo quiere medir corriente colocando las puntas del multímetro directamente entre fase y neutro, igual que cuando mide voltaje.", prompt: "Expliquen qué diferencia existe entre una medición de voltaje en paralelo y una medición de corriente. ¿Qué podría ocurrir?", lenses: ["Impedancia del instrumento", "Conexión serie/paralelo", "Categoría de medición", "Método con pinza"], options: ["Es correcto si selecciona amperes antes de conectar.", "Solo es riesgoso en circuitos de más de 480 V.", "No hacerlo: provocaría un cortocircuito; usar conexión en serie controlada o pinza adecuada."], answer: 2, feedback: "En modo corriente el instrumento presenta muy baja impedancia. Conectarlo en paralelo puede crear un cortocircuito. El método, rango, fusible y categoría deben verificarse antes de medir." },
+  { code: "D1-03", title: "kW no es lo mismo que kVA", case: "Una nueva carga necesita 72 kW y opera con factor de potencia 0.80. El equipo propone un transformador de 75 kVA porque 75 es mayor que 72.", prompt: "Debatan qué potencia debe dimensionar la infraestructura y qué margen o datos adicionales se necesitan.", lenses: ["Potencia activa", "Potencia aparente", "Factor de potencia", "Margen y demanda"], options: ["75 kVA basta porque supera los 72 kW.", "Calcular S = P/FP: la carga demanda 90 kVA antes de considerar margen.", "Multiplicar 72 × 0.80 para obtener 57.6 kVA."], answer: 1, feedback: "S = P / FP. Con 72 kW y FP 0.80, la demanda es 90 kVA. El dimensionamiento final también considera demanda, crecimiento, temperatura y criterios de ingeniería." },
+  { code: "D1-04", title: "El precio de la ineficiencia", case: "Dos motores entregan 15 kW mecánicos. El motor A tiene 90% de eficiencia y el B 82%. Compras prefiere B porque cuesta menos.", prompt: "¿El precio inicial debe decidir? Comparen potencia de entrada, pérdidas, horas de uso, temperatura y costo de ciclo de vida.", lenses: ["Pérdidas en kW", "Horas anuales", "Costo de energía", "Confiabilidad"], options: ["Elegir B: ambos entregan la misma potencia.", "Comparar costo total; B consume más y disipa más calor para la misma salida.", "Elegir A únicamente porque su porcentaje es más alto."], answer: 1, feedback: "A requiere ≈16.67 kW y B ≈18.29 kW. La diferencia de ≈1.62 kW se acumula durante todas las horas de operación y también eleva la carga térmica." },
+  { code: "D1-05", title: "AC o DC para el circuito de control", case: "Una modificación requiere sensores y relevadores cerca de una zona húmeda. Hay disponibles 120 V AC y una fuente de 24 V DC.", prompt: "Debatan seguridad, compatibilidad, caída de tensión, distancia, diagnóstico y comportamiento ante fallas. ¿Existe una respuesta universal?", lenses: ["Energía de contacto", "Compatibilidad de cargas", "Distancia del cable", "Protección y referencia"], options: ["Usar siempre 120 V AC porque ya está disponible.", "Usar siempre 24 V DC sin revisar corriente ni caída.", "Diseñar con evaluación de riesgo y carga; 24 V DC suele favorecer control, pero debe verificarse el circuito completo."], answer: 2, feedback: "24 V DC suele reducir exposición y es común en control, pero la elección depende de carga, distancia, caída de tensión, ambiente, aislamiento y protección. La ingeniería valida el sistema completo." }
+];
+
+const narration = videoSlides.map((slide) => `${slide.title}. ${slide.copy}`);
+
+function WaveVisual({ kind }: { kind: string }) {
+  return <div className={`lesson-visual ${kind}`} aria-hidden="true"><div className="grid-lines" />
+    {kind === "circuit" && <><div className="wire wire-a"/><div className="wire wire-b"/><span className="node n1">V</span><span className="node n2">I</span><span className="node n3">R</span></>}
+    {kind === "ohm" && <div className="formula-stack"><strong>V</strong><span>I × R</span><small>12 V = 2 A × 6 Ω</small></div>}
+    {kind === "wave" && <><div className="dc-line"><b>DC</b></div><div className="sine"><i/><i/><i/><i/><b>AC</b></div></>}
+    {kind === "power" && <div className="power-triangle"><span className="p">P</span><span className="q">Q</span><span className="s">S</span></div>}
+    {kind === "meter" && <div className="meter"><span>8.2</span><small>A</small><i/></div>}
+  </div>;
 }
 
-export default function Home() {
-  const [active, setActive] = useState(0);
-  const [completed, setCompleted] = useState<string[]>([]);
-  const [vibration, setVibration] = useState(4.2);
-  const [temperature, setTemperature] = useState(72);
-  const [examOpen, setExamOpen] = useState(false);
-  const [videoOpen, setVideoOpen] = useState(false);
-  const [question, setQuestion] = useState(0);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
+export default function CourseAdmin() {
+  const [view, setView] = useState<View>("inicio");
+  const [completed, setCompleted] = useState<View[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [videoIndex, setVideoIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [sound, setSound] = useState(true);
+  const videoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [calc, setCalc] = useState<Calculator>("ohm");
+  const [values, setValues] = useState<Record<string, string>>({ voltage: "230", resistance: "28.75", current: "10", pf: "0.86", input: "18.5", output: "15", distance: "120", cableR: "0.00115" });
   const [caseIndex, setCaseIndex] = useState(0);
-  const [caseStage, setCaseStage] = useState<"case" | "debate" | "decision">("case");
-  const [caseChoice, setCaseChoice] = useState<number | null>(null);
-  const [caseAnswers, setCaseAnswers] = useState<Record<string, number>>({});
-  const [speaking, setSpeaking] = useState(false);
-  const [immersive, setImmersive] = useState(false);
+  const [stage, setStage] = useState<Stage>("caso");
+  const [choice, setChoice] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
 
+  useEffect(() => { const saved = localStorage.getItem("integr-day1-completed"); const savedAnswers = localStorage.getItem("integr-day1-debates"); if (saved) setCompleted(JSON.parse(saved)); if (savedAnswers) setAnswers(JSON.parse(savedAnswers)); }, []);
   useEffect(() => {
-    const saved = window.localStorage.getItem("integr-course-progress");
-    if (saved) setCompleted(JSON.parse(saved));
-    const savedCases = window.localStorage.getItem("integr-case-progress");
-    if (savedCases) setCaseAnswers(JSON.parse(savedCases));
-    const syncFullscreen = () => setImmersive(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", syncFullscreen);
-    return () => { window.speechSynthesis?.cancel(); document.removeEventListener("fullscreenchange", syncFullscreen); };
-  }, []);
+    if (!playing) { if (videoTimer.current) clearInterval(videoTimer.current); speechSynthesis?.cancel(); return; }
+    if (sound && "speechSynthesis" in window) { speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(narration[videoIndex]); utterance.lang = "es-MX"; utterance.rate = .93; speechSynthesis.speak(utterance); }
+    videoTimer.current = setInterval(() => setVideoIndex((current) => { if (current === videoSlides.length - 1) { setPlaying(false); return current; } return current + 1; }), 9000);
+    return () => { if (videoTimer.current) clearInterval(videoTimer.current); };
+  }, [playing, videoIndex, sound]);
 
-  const progress = Math.round((completed.length / modules.length) * 75);
-  const risk = useMemo(() => {
-    const points = (vibration > 7 ? 2 : vibration > 4.5 ? 1 : 0) + (temperature > 85 ? 2 : temperature > 70 ? 1 : 0);
-    return points >= 3 ? { label: "Crítico", action: "Detén, bloquea y diagnostica", tone: "critical" } : points >= 1 ? { label: "Atención", action: "Inspecciona alineación y rodamientos", tone: "warning" } : { label: "Estable", action: "Continúa monitoreando tendencia", tone: "stable" };
-  }, [vibration, temperature]);
+  const progress = Math.round((completed.length / sections.length) * 100);
+  const numeric = (key: string) => Number(values[key]) || 0;
+  const result = useMemo(() => {
+    if (calc === "ohm") { const v = numeric("voltage"), r = numeric("resistance"); return { value: r ? v / r : 0, unit: "A", formula: "I = V ÷ R", steps: `${v} V ÷ ${r} Ω` }; }
+    if (calc === "potencia") { const v = numeric("voltage"), i = numeric("current"), pf = numeric("pf"); return { value: (v * i * pf) / 1000, unit: "kW", formula: "P = V × I × FP", steps: `${v} × ${i} × ${pf} ÷ 1000` }; }
+    if (calc === "eficiencia") { const input = numeric("input"), output = numeric("output"); return { value: input ? (output / input) * 100 : 0, unit: "%", formula: "η = Psalida ÷ Pentrada × 100", steps: `${output} kW ÷ ${input} kW × 100` }; }
+    const i = numeric("current"), d = numeric("distance"), r = numeric("cableR"); return { value: i * i * r * d * 2 / 1000, unit: "kW", formula: "Ppérdida = I² × Rtotal", steps: `${i}² × ${r} × ${d} × 2 ÷ 1000` };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calc, values]);
 
-  const current = modules[active];
-  const activeCase = dilemmas[caseIndex];
+  function go(next: View) { setView(next); setMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function markDone(id: View) { const next = completed.includes(id) ? completed.filter((item) => item !== id) : [...completed, id]; setCompleted(next); localStorage.setItem("integr-day1-completed", JSON.stringify(next)); }
+  function openCase(index: number) { setCaseIndex(index); setStage("caso"); setChoice(null); }
+  function decide(index: number) { if (choice !== null) return; setChoice(index); const next = { ...answers, [debates[caseIndex].code]: index }; setAnswers(next); localStorage.setItem("integr-day1-debates", JSON.stringify(next)); }
 
-  function markComplete() {
-    const next = completed.includes(current.id) ? completed : [...completed, current.id];
-    setCompleted(next);
-    window.localStorage.setItem("integr-course-progress", JSON.stringify(next));
-  }
-
-  function answer(index: number) {
-    if (selected !== null) return;
-    setSelected(index);
-    if (index === questions[question].answer) setScore((value) => value + 1);
-  }
-
-  function nextQuestion() {
-    if (question === questions.length - 1) {
-      setFinished(true);
-      return;
-    }
-    setQuestion((value) => value + 1);
-    setSelected(null);
-  }
-
-  function resetExam() {
-    setQuestion(0); setSelected(null); setScore(0); setFinished(false);
-  }
-
-  function stopNarration() {
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
-  }
-
-  function narrateCase() {
-    if (!("speechSynthesis" in window)) return;
-    if (speaking) { stopNarration(); return; }
-    const voice = new SpeechSynthesisUtterance(`${activeCase.title}. ${activeCase.setup}. Para el debate: ${activeCase.prompt}`);
-    voice.lang = "es-MX";
-    voice.rate = 0.92;
-    voice.pitch = 1;
-    voice.onend = () => setSpeaking(false);
-    voice.onerror = () => setSpeaking(false);
-    setSpeaking(true);
-    window.speechSynthesis.speak(voice);
-  }
-
-  function openCase(index: number) {
-    stopNarration();
-    setCaseIndex(index);
-    setCaseStage("case");
-    setCaseChoice(null);
-  }
-
-  function decideCase(index: number) {
-    if (caseChoice !== null) return;
-    setCaseChoice(index);
-    const next = { ...caseAnswers, [activeCase.number]: index };
-    setCaseAnswers(next);
-    window.localStorage.setItem("integr-case-progress", JSON.stringify(next));
-  }
-
-  async function toggleImmersive() {
-    if (document.fullscreenElement) await document.exitFullscreen();
-    else await document.documentElement.requestFullscreen();
-  }
-
-  return (
-    <main>
-      <nav className="topbar" aria-label="Navegación principal">
-        <a className="brand" href="#inicio"><img src="/integr-logo.png" alt="INTEGR Ingeniería y Tecnología" /></a>
-        <div className="nav-links"><a href="#ruta">Ruta</a><a href="#laboratorio">Simulador</a><a href="#casos">Casos</a><a href="#videoteca">Videos</a></div>
-        <button className="ghost-button" onClick={() => setVideoOpen(true)}>▶ Material original</button>
-      </nav>
-
-      <section className="hero" id="inicio">
-        <div className="hero-copy">
-          <div className="eyebrow"><span className="live-dot" /> RUTA TÉCNICA · CERTIFICACIÓN INTEGR</div>
-          <h1>Domina el sistema.<br /><em>Protege la operación.</em></h1>
-          <p>Una experiencia práctica para conectar electricidad, mecánica y electrónica industrial con criterio de seguridad.</p>
-          <div className="hero-actions">
-            <a className="primary-button" href="#ruta">Comenzar recorrido <span>→</span></a>
-            <button className="text-button" onClick={() => setExamOpen(true)}>Ir al examen final</button>
-          </div>
-          <div className="hero-stats"><div><strong>3</strong><span>bloques técnicos</span></div><div><strong>15</strong><span>casos de debate</span></div><div><strong>6</strong><span>videos técnicos</span></div></div>
-        </div>
-        <div className="hero-visual" aria-label="Sistema industrial conectado">
-          <div className="grid-overlay" />
-          <div className="system-orbit orbit-one" /><div className="system-orbit orbit-two" />
-          <div className="core"><span>INTEGR</span><small>SISTEMA SEGURO</small></div>
-          <div className="node node-a"><b>01</b><span>Eléctrico</span></div>
-          <div className="node node-b"><b>02</b><span>Mecánico</span></div>
-          <div className="node node-c"><b>03</b><span>Control</span></div>
-          <div className="status-chip">● Operación conectada</div>
-        </div>
-      </section>
-
-      <section className="route-section" id="ruta">
-        <div className="section-heading"><div><span className="kicker">RUTA DE APRENDIZAJE</span><h2>Tres disciplinas. <em>Un solo criterio.</em></h2></div><div className="progress-cluster"><ProgressRing value={progress} /><span>Tu avance<br /><b>{completed.length} de 3 bloques</b></span></div></div>
-        <div className="module-grid">
-          {modules.map((item, index) => <button key={item.id} className={`module-card ${active === index ? "active" : ""}`} onClick={() => setActive(index)} aria-pressed={active === index}>
-            <div className="module-top"><span>{item.number}</span><i>{completed.includes(item.id) ? "✓" : item.icon}</i></div>
-            <span className="module-eyebrow">{item.eyebrow}</span><h3>{item.title}</h3><p>{item.description}</p>
-            <div className="module-footer"><span>{item.duration}</span><span>Explorar →</span></div>
-          </button>)}
-        </div>
-
-        <article className="lesson-panel">
-          <div className="lesson-image"><img src={current.image} alt={current.imageAlt} /><span className="image-label">BLOQUE {current.number}</span><a href={current.sourceUrl} target="_blank" rel="noreferrer">Fuente de imagen ↗</a></div>
-          <div className="lesson-content"><span className="kicker">CONCEPTO CLAVE · {current.title.toUpperCase()}</span><h2>{current.lessonTitle}</h2><p>{current.lessonCopy}</p>
-            <ol>{current.bullets.map((bullet, i) => <li key={bullet}><span>0{i + 1}</span>{bullet}</li>)}</ol>
-            <button className="primary-button dark" onClick={markComplete}>{completed.includes(current.id) ? "Bloque completado ✓" : "Marcar como aprendido"}</button>
-          </div>
-        </article>
-      </section>
-
-      <section className="lab-section" id="laboratorio">
-        <div className="lab-copy"><span className="kicker light">LABORATORIO DE DIAGNÓSTICO</span><h2>Lee las señales<br />antes de la falla.</h2><p>Ajusta las mediciones y observa cómo cambia la prioridad de intervención. Los umbrales son didácticos; en campo utiliza la línea base y los límites del fabricante.</p><div className="lab-rule"><span /> AISLAR · MEDIR · INTERPRETAR · ACTUAR</div></div>
-        <div className="simulator">
-          <div className="sim-header"><span>SIM-02 / BOMBA CENTRÍFUGA</span><span className="online">● EN LÍNEA</span></div>
-          <label><span>Vibración RMS <b>{vibration.toFixed(1)} mm/s</b></span><input type="range" min="1" max="11" step="0.1" value={vibration} onChange={(e) => setVibration(Number(e.target.value))} /></label>
-          <label><span>Temperatura rodamiento <b>{temperature} °C</b></span><input type="range" min="35" max="110" value={temperature} onChange={(e) => setTemperature(Number(e.target.value))} /></label>
-          <div className={`diagnosis ${risk.tone}`}><span>PRIORIDAD</span><strong>{risk.label}</strong><p>{risk.action}</p></div>
-          <div className="signal-flow"><span>SENSOR</span><i>→</i><span>CONTROL</span><i>→</i><span>ACCIÓN</span></div>
-        </div>
-      </section>
-
-      <section className="dilemma-section" id="casos">
-        <div className="dilemma-heading">
-          <div><span className="kicker">15 CASOS · DECISIONES REALES</span><h2>Primero entiende.<br /><em>Luego debate. Después decide.</em></h2></div>
-          <div className="case-completion"><b>{Object.keys(caseAnswers).length}</b><span>casos<br />respondidos</span></div>
-        </div>
-        <div className="case-workspace">
-          <aside className="case-list" aria-label="Lista de casos">
-            {(["Electricidad", "Mecánico", "Electrónica"] as const).map((group) => <div key={group} className="case-group">
-              <h3>{group === "Electricidad" ? "⚡" : group === "Mecánico" ? "⚙" : "◉"} {group}</h3>
-              {dilemmas.map((item, index) => item.module === group && <button key={item.number} className={caseIndex === index ? "active" : ""} onClick={() => openCase(index)}><span>{caseAnswers[item.number] !== undefined ? "✓" : item.number}</span>{item.title}</button>)}
-            </div>)}
-          </aside>
-          <article className="case-player">
-            <div className="case-player-top"><div><span>{activeCase.number}</span><b>{activeCase.module}</b></div><button className={speaking ? "speaking" : ""} onClick={narrateCase} aria-label={speaking ? "Detener narración" : "Escuchar narración"}>{speaking ? "■ Detener audio" : "◖)) Escuchar caso"}</button></div>
-            <div className="stage-rail" aria-label="Etapas del caso"><span className={caseStage === "case" ? "active" : "done"}>1. Caso</span><span className={caseStage === "debate" ? "active" : caseStage === "decision" ? "done" : ""}>2. Debate</span><span className={caseStage === "decision" ? "active" : ""}>3. Incisos</span></div>
-            {caseStage === "case" && <div className="case-stage case-intro"><span className="stage-label">EL DILEMA</span><h2>{activeCase.title}</h2><p>{activeCase.setup}</p><div className="case-alert"><span>!</span><p><b>No respondas todavía.</b><br />Identifica primero el peligro, las personas expuestas y la consecuencia de equivocarte.</p></div><button className="primary-button dark" onClick={() => setCaseStage("debate")}>Abrir el debate →</button></div>}
-            {caseStage === "debate" && <div className="case-stage"><span className="stage-label">DOS POSTURAS EN TENSIÓN</span><h2>¿Qué defenderías en una reunión de turno?</h2><div className="debate-sides"><div><span>A</span><p>{activeCase.sides[0]}</p></div><div><span>B</span><p>{activeCase.sides[1]}</p></div></div><div className="missing-data"><b>Antes de decidir, pregunta:</b><p>{activeCase.prompt}</p></div><div className="stage-actions"><button className="text-button" onClick={() => setCaseStage("case")}>← Volver al caso</button><button className="primary-button dark" onClick={() => setCaseStage("decision")}>Ver incisos →</button></div></div>}
-            {caseStage === "decision" && <div className="case-stage decision-stage"><span className="stage-label">TOMA UNA POSICIÓN</span><h2>Selecciona la respuesta más defendible.</h2><div className="case-options">{activeCase.options.map((option, index) => <button key={option} onClick={() => decideCase(index)} className={caseChoice === null ? "" : index === activeCase.answer ? "correct" : caseChoice === index ? "wrong" : "muted"}><span>{String.fromCharCode(65 + index)}</span><p>{option}</p></button>)}</div>{caseChoice !== null && <div className={`case-feedback ${caseChoice === activeCase.answer ? "good" : "bad"}`}><strong>{caseChoice === activeCase.answer ? "Decisión sólida" : "Esa ruta aumenta el riesgo"}</strong><p>{activeCase.feedback}</p><div><button onClick={() => setCaseStage("debate")}>Revisar debate</button><button onClick={() => openCase((caseIndex + 1) % dilemmas.length)}>Siguiente caso →</button></div></div>}</div>}
-            <div className="case-video-link"><span>VIDEO RELACIONADO</span><a href={`https://www.youtube.com/watch?v=${activeCase.videoId}`} target="_blank" rel="noreferrer">Abrir apoyo técnico ↗</a></div>
-          </article>
-        </div>
-      </section>
-
-      <section className="video-library" id="videoteca">
-        <div className="video-library-heading"><div><span className="kicker light">VIDEOTECA TÉCNICA</span><h2>Observa el riesgo.<br />Conecta la teoría.</h2></div><p>Seis recursos para preparar el debate. Activa subtítulos en YouTube cuando estén disponibles.</p></div>
-        <div className="video-grid">{videoLibrary.map((video) => <article key={video.id} className="video-card"><div className="video-frame"><iframe loading="lazy" src={`https://www.youtube-nocookie.com/embed/${video.id}`} title={video.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></div><div className="video-meta"><span>{video.tag}</span><h3>{video.title}</h3><p>{video.source}</p></div></article>)}</div>
-        <p className="video-disclaimer">Los videos complementan el análisis y no sustituyen procedimientos, estudios de riesgo, manuales ni capacitación autorizada.</p>
-      </section>
-
-      <section className="exam-banner" id="recursos">
-        <div><span className="kicker">VALIDACIÓN FINAL</span><h2>¿Listo para tomar decisiones?</h2><p>Seis situaciones, retroalimentación inmediata y una meta mínima del 80%.</p></div>
-        <button className="primary-button" onClick={() => { resetExam(); setExamOpen(true); }}>Iniciar examen <span>→</span></button>
-      </section>
-
-      <footer><img src="/integr-logo.png" alt="INTEGR" /><p>Curso interactivo basado en “Examen de Certificación”.</p><div className="credits">Imágenes educativas: {modules.map((m, i) => <span key={m.id}><a href={m.sourceUrl} target="_blank" rel="noreferrer">{m.source}</a>{i < modules.length - 1 ? " · " : ""}</span>)}</div></footer>
-
-      <div className="experience-dock" aria-label="Controles de experiencia">
-        <span><i /> LOCAL · LISTO</span>
-        <button onClick={() => document.querySelector("#casos")?.scrollIntoView({ behavior: "smooth" })}>Continuar casos</button>
-        <button onClick={toggleImmersive}>{immersive ? "Salir de pantalla completa" : "⛶ Modo inmersivo"}</button>
-      </div>
-
-      {videoOpen && <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Video original"><div className="video-modal"><button className="close" onClick={() => setVideoOpen(false)} aria-label="Cerrar">×</button><div className="modal-title"><span>REFERENCIA ORIGINAL</span><h2>Examen de Certificación</h2></div><video src="/examen-certificacion.mp4" controls autoPlay /></div></div>}
-
-      {examOpen && <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exam-title"><div className="exam-modal"><button className="close" onClick={() => setExamOpen(false)} aria-label="Cerrar">×</button>
-        {!finished ? <><div className="exam-progress"><span>EXAMEN FINAL</span><b>{String(question + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}</b></div><div className="exam-bar"><span style={{ width: `${((question + 1) / questions.length) * 100}%` }} /></div><h2 id="exam-title">{questions[question].q}</h2><div className="options">{questions[question].options.map((option, index) => <button key={option} onClick={() => answer(index)} className={selected === null ? "" : index === questions[question].answer ? "correct" : selected === index ? "wrong" : "muted"}><span>{String.fromCharCode(65 + index)}</span>{option}</button>)}</div>
-          {selected !== null && <div className={`feedback ${selected === questions[question].answer ? "good" : "bad"}`}><strong>{selected === questions[question].answer ? "Correcto" : "Revisa el criterio"}</strong><p>{questions[question].why}</p><button onClick={nextQuestion}>{question === questions.length - 1 ? "Ver resultado" : "Siguiente reto →"}</button></div>}</> : <div className="result"><span className="result-score">{score}/{questions.length}</span><span className="kicker">RESULTADO</span><h2>{score >= 5 ? "Criterio técnico validado." : "Refuerza la ruta y vuelve a intentar."}</h2><p>{score >= 5 ? "Reconoces los equipos, riesgos y señales clave para una intervención coordinada." : "Tu resultado aún no alcanza el 80%. Repasa los tres bloques antes del siguiente intento."}</p><div><button className="primary-button" onClick={() => setExamOpen(false)}>Cerrar</button><button className="text-button" onClick={resetExam}>Repetir examen</button></div></div>}
-      </div></div>}
-    </main>
-  );
+  const activeCase = debates[caseIndex], activeSlide = videoSlides[videoIndex];
+  return <main className="admin-shell">
+    <aside className={`sidebar ${menuOpen ? "open" : ""}`}><button className="close-menu" onClick={() => setMenuOpen(false)} aria-label="Cerrar menú">×</button>
+      <button className="brand" onClick={() => go("inicio")}><img src="/integr-logo.png" alt="INTEGR"/><span><b>Course OS</b><small>Administrador</small></span></button>
+      <div className="side-label">NAVEGACIÓN</div><button className={`side-link ${view === "inicio" ? "selected" : ""}`} onClick={() => go("inicio")}><span>⌂</span> Resumen del curso</button>
+      <div className="side-label course-label">PLAN DE 5 DÍAS <em>1 / 5</em></div><div className="day-list">{days.map((day) => <button key={day.day} disabled={!day.active} className={`day-button ${day.active ? "current" : "locked"}`} onClick={() => day.active && go("inicio")}><span className="day-number">{String(day.day).padStart(2,"0")}</span><span><b>Día {day.day}</b><small>{day.title}</small></span><i>{day.active ? "●" : "◌"}</i></button>)}</div>
+      <div className="sidebar-footer"><div className="mini-progress"><span style={{width:`${progress}%`}}/></div><div><span>Progreso Día 1</span><b>{progress}%</b></div></div>
+    </aside>{menuOpen && <button className="menu-backdrop" onClick={() => setMenuOpen(false)} aria-label="Cerrar menú"/>}
+    <section className="workspace"><header className="topbar"><button className="menu-toggle" onClick={() => setMenuOpen(true)} aria-label="Abrir menú">☰</button><div className="crumbs"><span>Habilidades electromecánicas</span><b>/</b><strong>{view === "inicio" ? "Día 1" : sections.find((item) => item.id === view)?.label}</strong></div><div className="top-actions"><span className="live-dot">Publicado</span><button className="avatar" aria-label="Perfil del administrador">SG</button></div></header>
+      {view === "inicio" && <div className="page-content dashboard">
+        <div className="hero-panel"><div className="hero-copy"><div className="eyebrow"><span>DÍA 1</span> MÓDULO I · 9 HORAS</div><h1>Fundamentos<br/><em>eléctricos</em></h1><p>Una experiencia completa para comprender, calcular, medir y defender decisiones eléctricas con criterio técnico.</p><div className="hero-actions"><button className="primary" onClick={() => go("teoria")}>Abrir experiencia <span>→</span></button><a className="secondary" href="/habilidades-electromecanicas.pdf#page=1" target="_blank">Ver documento fuente ↗</a></div></div>
+          <div className="hero-instrument" aria-hidden="true"><div className="scope"><div className="scope-grid"/><div className="scope-wave"><i/><i/><i/><i/><i/></div><span>AC · 60 Hz</span><b>230.4 <small>V</small></b></div><div className="instrument-row"><div><small>CORRIENTE</small><b>8.2 A</b></div><div><small>EFICIENCIA</small><b>91%</b></div><div><small>ESTADO</small><b className="ok">NORMAL</b></div></div></div></div>
+        <div className="metric-grid"><article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>1 de 5 días</b><p>Los próximos módulos están programados.</p></div></article><article><span className="metric-icon amber">◒</span><div><small>RUTA DEL DÍA 1</small><b>{completed.length} de 4 etapas</b><p>{progress ? "Continúa donde lo dejaste." : "Comienza con la teoría."}</p></div></article><article><span className="metric-icon green">✓</span><div><small>DEBATES RESUELTOS</small><b>{Object.keys(answers).length} de 5 casos</b><p>Decisiones guardadas en este equipo.</p></div></article></div>
+        <section className="section-block"><div className="section-heading"><div><span>RUTA DE APRENDIZAJE</span><h2>Todo el Día 1, en orden</h2></div><p>La teoría habilita el contexto; la práctica convierte fórmulas en decisiones.</p></div><div className="learning-path">{sections.map((item,index) => <button key={item.id} onClick={() => go(item.id)} className={completed.includes(item.id)?"done":""}><span className="step-no">{item.icon}</span><span className="step-copy"><small>{item.short}</small><b>{item.label}</b><em>{item.detail}</em></span><span className="step-status">{completed.includes(item.id)?"✓":"→"}</span>{index<sections.length-1&&<i className="connector"/>}</button>)}</div></section>
+        <section className="section-block course-plan"><div className="section-heading"><div><span>ESTRUCTURA GENERAL</span><h2>Programa de cinco días</h2></div><span className="source-pill">Basado en el PDF maestro</span></div><div className="plan-table">{days.map((day)=><div key={day.day} className={day.active?"active":""}><span>DÍA {String(day.day).padStart(2,"0")}</span><b>{day.title}</b><small>{day.hours}</small><em>{day.status}</em></div>)}</div></section>
+      </div>}
+      {view === "teoria" && <div className="page-content lesson-page"><PageIntro index="01" overline="TEORÍA · SESIONES 1–3" title="Manual de fundamentos eléctricos" copy="Los conceptos del Módulo I convertidos en una lectura clara, acompañada por el documento original."/><div className="lesson-layout"><div className="lesson-main"><div className="concept-grid">{lessons.map((lesson)=><article key={lesson.n}><span>{lesson.n}</span><small>{lesson.tag}</small><h3>{lesson.title}</h3><p>{lesson.text}</p></article>)}</div><div className="key-idea"><span>IDEA CLAVE</span><blockquote>Una lectura no es todavía un diagnóstico. La decisión nace al relacionar magnitudes, condición, placa y tendencia.</blockquote></div></div><aside className="manual-card"><div className="manual-head"><span>DOCUMENTO FUENTE</span><b>Habilidades electromecánicas</b><small>Página 9 del original · Módulo I</small></div><iframe title="Manual Habilidades Electromecánicas" src="/habilidades-electromecanicas.pdf#page=1&view=FitH"/><a href="/habilidades-electromecanicas.pdf#page=1" target="_blank">Abrir manual del módulo ↗</a></aside></div><CompletionBar done={completed.includes("teoria")} label="Marcar teoría como completada" onDone={()=>markDone("teoria")} next="Continuar a la video-lección" onNext={()=>go("video")}/></div>}
+      {view === "video" && <div className="page-content lesson-page"><PageIntro index="02" overline="VIDEO-LECCIÓN · AUDIO EN ESPAÑOL" title="De la carga al diagnóstico" copy="Una explicación visual de cinco escenas, narrada y sincronizada con los temas del manual."/><div className="video-shell"><div className="video-stage"><div className="video-label">INTEGR · DÍA 1</div><div className="video-counter">{String(videoIndex+1).padStart(2,"0")} / 05</div><div className="video-copy"><span>{activeSlide.kicker}</span><h2>{activeSlide.title}</h2><p>{activeSlide.copy}</p></div><WaveVisual kind={activeSlide.visual}/><div className="video-controls"><button onClick={()=>setPlaying(!playing)} aria-label={playing?"Pausar":"Reproducir"}>{playing?"Ⅱ":"▶"}</button><div className="timeline">{videoSlides.map((_,index)=><button key={index} onClick={()=>{setVideoIndex(index);setPlaying(false)}} className={index<=videoIndex?"watched":""} aria-label={`Ir a escena ${index+1}`}><span/></button>)}</div><button onClick={()=>setSound(!sound)} aria-label={sound?"Silenciar":"Activar audio"}>{sound?"◖))":"◖×"}</button></div></div><div className="chapter-list">{videoSlides.map((slide,index)=><button key={slide.title} className={index===videoIndex?"active":""} onClick={()=>{setVideoIndex(index);setPlaying(false)}}><span>{String(index+1).padStart(2,"0")}</span><div><b>{slide.title}</b><small>{slide.kicker}</small></div><i>{index<videoIndex?"✓":""}</i></button>)}</div></div><div className="audio-note"><span>♫</span><p><b>Narración inteligente</b>El audio utiliza la voz en español disponible en tu dispositivo. Puedes silenciarlo y recorrer las escenas manualmente.</p></div><CompletionBar done={completed.includes("video")} label="Marcar video como completado" onDone={()=>markDone("video")} next="Ir al laboratorio" onNext={()=>go("practica")}/></div>}
+      {view === "practica" && <div className="page-content lesson-page"><PageIntro index="03" overline="PRÁCTICA · CALCULADORA INTERACTIVA" title="Laboratorio de magnitudes" copy="Calcula, observa el procedimiento y conecta el resultado con una decisión de mantenimiento."/><div className="lab-shell"><div className="calc-tabs">{([["ohm","Ley de Ohm"],["potencia","Potencia"],["eficiencia","Eficiencia"],["perdidas","Pérdidas"]] as [Calculator,string][]).map(([id,label])=><button key={id} className={calc===id?"active":""} onClick={()=>setCalc(id)}>{label}</button>)}</div><div className="lab-grid"><div className="input-panel"><span className="panel-kicker">DATOS DE CAMPO</span>{calc==="ohm"&&<><Field label="Voltaje" unit="V" value={values.voltage} onChange={(v)=>setValues({...values,voltage:v})}/><Field label="Resistencia" unit="Ω" value={values.resistance} onChange={(v)=>setValues({...values,resistance:v})}/></>}{calc==="potencia"&&<><Field label="Voltaje" unit="V" value={values.voltage} onChange={(v)=>setValues({...values,voltage:v})}/><Field label="Corriente" unit="A" value={values.current} onChange={(v)=>setValues({...values,current:v})}/><Field label="Factor de potencia" unit="FP" value={values.pf} onChange={(v)=>setValues({...values,pf:v})}/></>}{calc==="eficiencia"&&<><Field label="Potencia de entrada" unit="kW" value={values.input} onChange={(v)=>setValues({...values,input:v})}/><Field label="Potencia de salida" unit="kW" value={values.output} onChange={(v)=>setValues({...values,output:v})}/></>}{calc==="perdidas"&&<><Field label="Corriente" unit="A" value={values.current} onChange={(v)=>setValues({...values,current:v})}/><Field label="Distancia (un sentido)" unit="m" value={values.distance} onChange={(v)=>setValues({...values,distance:v})}/><Field label="Resistencia del cable" unit="Ω/m" value={values.cableR} onChange={(v)=>setValues({...values,cableR:v})}/></>}<button className="reset" onClick={()=>setValues({voltage:"230",resistance:"28.75",current:"10",pf:"0.86",input:"18.5",output:"15",distance:"120",cableR:"0.00115"})}>Restablecer ejemplo</button></div><div className="result-panel"><span className="panel-kicker">RESULTADO CALCULADO</span><div className="big-result"><b>{Number.isFinite(result.value)?result.value.toFixed(result.unit==="%"?1:2):"0.00"}</b><span>{result.unit}</span></div><div className="formula-card"><small>FÓRMULA</small><b>{result.formula}</b><code>{result.steps}</code></div><div className="diagnostic"><span>INTERPRETACIÓN</span><p>{calc==="ohm"?"Compara la corriente calculada con la placa y la medición real.":calc==="potencia"?"Esta es potencia activa monofásica. Para sistemas trifásicos se incorpora √3.":calc==="eficiencia"?"La diferencia entre entrada y salida se transforma principalmente en pérdidas.":"Estas pérdidas aparecen como calor y caída de tensión en el conductor."}</p></div></div></div></div><div className="practice-challenge"><span>RETO DE CAMPO 01</span><h3>Un calentador de 28.75 Ω se conecta a 230 V.</h3><p>Usa la calculadora para obtener la corriente. Después explica si una protección de 10 A tendría margen suficiente antes de considerar condiciones reales.</p><b>Resultado esperado: 8.00 A</b></div><CompletionBar done={completed.includes("practica")} label="Marcar práctica como completada" onDone={()=>markDone("practica")} next="Entrar al debate" onNext={()=>go("debate")}/></div>}
+      {view === "debate" && <div className="page-content lesson-page debate-page"><PageIntro index="04" overline="DEBATE · 5 CASOS" title="Decisiones bajo presión" copy="Primero conoce el caso. Después debátelo sin opciones. Los incisos se muestran únicamente cuando el grupo está listo."/><div className="case-nav">{debates.map((item,index)=><button key={item.code} onClick={()=>openCase(index)} className={`${index===caseIndex?"active":""} ${answers[item.code]!==undefined?"answered":""}`}><span>{index+1}</span><div><small>{item.code}</small><b>{item.title}</b></div><i>{answers[item.code]!==undefined?"✓":""}</i></button>)}</div><div className="case-stage"><div className="stage-rail"><div className={stage==="caso"?"active":"done"}><span>1</span><b>CASO</b></div><i/><div className={stage==="debate"?"active":stage==="incisos"?"done":""}><span>2</span><b>DEBATE</b></div><i/><div className={stage==="incisos"?"active":""}><span>3</span><b>INCISOS</b></div></div>{stage==="caso"&&<div className="case-card"><div className="case-meta"><span>{activeCase.code}</span><small>CASO {caseIndex+1} DE 5</small></div><h2>{activeCase.title}</h2><p>{activeCase.case}</p><div className="no-options">Los incisos permanecen ocultos para no condicionar la conversación.</div><button className="primary" onClick={()=>setStage("debate")}>Iniciar debate <span>→</span></button></div>}{stage==="debate"&&<div className="debate-card"><span className="panel-kicker">PREGUNTA PARA EL EQUIPO</span><h2>{activeCase.prompt}</h2><div className="lens-grid">{activeCase.lenses.map((lens,index)=><div key={lens}><span>{String(index+1).padStart(2,"0")}</span><b>{lens}</b></div>)}</div><div className="debate-tools"><span>Regla sugerida: 4 minutos · una voz a favor · una en contra · una conclusión</span><button className="primary" onClick={()=>setStage("incisos")}>Mostrar incisos <span>→</span></button></div></div>}{stage==="incisos"&&<div className="options-card"><span className="panel-kicker">SELECCIONA LA MEJOR DECISIÓN TÉCNICA</span><h2>{activeCase.title}</h2><div className="options-list">{activeCase.options.map((option,index)=><button key={option} disabled={choice!==null} onClick={()=>decide(index)} className={choice===null?"":index===activeCase.answer?"correct":choice===index?"wrong":"muted"}><span>{String.fromCharCode(65+index)}</span><p>{option}</p><i>{choice!==null&&index===activeCase.answer?"✓":choice===index?"×":""}</i></button>)}</div>{choice!==null&&<div className="feedback"><span>{choice===activeCase.answer?"DECISIÓN SÓLIDA":"REVISA EL CRITERIO"}</span><p>{activeCase.feedback}</p><button onClick={()=>caseIndex<debates.length-1?openCase(caseIndex+1):markDone("debate")}>{caseIndex<debates.length-1?"Siguiente caso →":"Completar debate ✓"}</button></div>}</div>}</div><CompletionBar done={completed.includes("debate")} label="Marcar debate como completado" onDone={()=>markDone("debate")} next="Volver al resumen" onNext={()=>go("inicio")}/></div>}
+    </section>
+  </main>;
 }
+
+function PageIntro({index,overline,title,copy}:{index:string;overline:string;title:string;copy:string}){return <header className="page-intro"><span className="big-index">{index}</span><div><small>{overline}</small><h1>{title}</h1><p>{copy}</p></div></header>}
+function Field({label,unit,value,onChange}:{label:string;unit:string;value:string;onChange:(v:string)=>void}){return <label className="field"><span>{label}</span><div><input type="number" step="any" value={value} onChange={(event)=>onChange(event.target.value)}/><b>{unit}</b></div></label>}
+function CompletionBar({done,label,onDone,next,onNext}:{done:boolean;label:string;onDone:()=>void;next:string;onNext:()=>void}){return <div className="completion-bar"><button className={done?"done":""} onClick={onDone}><span>{done?"✓":"○"}</span>{done?"Etapa completada":label}</button><button onClick={onNext}>{next} <span>→</span></button></div>}
