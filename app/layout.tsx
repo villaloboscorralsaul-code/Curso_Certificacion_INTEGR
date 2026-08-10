@@ -9,6 +9,7 @@ import "./practice-experience.css";
 import "./design-refresh.css";
 import "./debate-legibility.css";
 import "./video-feature.css";
+import "./day2.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
