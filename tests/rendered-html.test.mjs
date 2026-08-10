@@ -61,3 +61,10 @@ test("provides plain-language and contextual learning support", async () => {
   assert.match(coach, /¿Qué hago aquí\?/);
   assert.match(coach, /integr-large-text/);
 });
+
+test("local server reloads the worker when a new build changes asset hashes", async () => {
+  const server = await readFile(new URL("../scripts/local-server.mjs", import.meta.url), "utf8");
+  assert.match(server, /stats\.mtimeMs !== workerModified/);
+  assert.match(server, /compilación local sincronizada/);
+  assert.match(server, /cache-control", "no-store/);
+});

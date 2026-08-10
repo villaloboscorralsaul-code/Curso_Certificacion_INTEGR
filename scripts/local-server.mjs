@@ -8,7 +8,19 @@ const port = Number(process.env.INTEGR_LOCAL_PORT || 4173);
 const root = process.cwd();
 const clientRoot = path.resolve(root, "dist/client");
 const workerPath = path.resolve(root, "dist/server/index.js");
-const { default: worker } = await import(`${pathToFileURL(workerPath).href}?local=${Date.now()}`);
+let workerModified = 0;
+let worker;
+
+async function currentWorker() {
+  const stats = await fs.stat(workerPath);
+  if (!worker || stats.mtimeMs !== workerModified) {
+    const module = await import(`${pathToFileURL(workerPath).href}?local=${stats.mtimeMs}`);
+    worker = module.default;
+    workerModified = stats.mtimeMs;
+    console.log("INTEGR: compilación local sincronizada");
+  }
+  return worker;
+}
 
 const contentTypes = {
   ".css": "text/css; charset=utf-8",
@@ -40,9 +52,10 @@ const server = http.createServer(async (request, response) => {
   try {
     const url = new URL(request.url || "/", `http://${host}:${port}`);
     const asset = await staticResponse(new Request(url));
+    const activeWorker = await currentWorker();
     const result = asset.status === 200
       ? asset
-      : await worker.fetch(new Request(url, { method: request.method }), { ASSETS: { fetch: staticResponse } }, { waitUntil() {}, passThroughOnException() {} });
+      : await activeWorker.fetch(new Request(url, { method: request.method }), { ASSETS: { fetch: staticResponse } }, { waitUntil() {}, passThroughOnException() {} });
     response.statusCode = result.status;
     result.headers.forEach((value, key) => response.setHeader(key, value));
     response.setHeader("cache-control", "no-store");
