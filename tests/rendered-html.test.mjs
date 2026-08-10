@@ -39,3 +39,12 @@ test("keeps the learning experiences and source material wired", async () => {
   assert.ok(sourcePdf.byteLength > 1_000_000);
   assert.ok(socialCard.byteLength > 100_000);
 });
+
+test("includes the guided debate facilitation tools", async () => {
+  const debate = await readFile(new URL("../app/DebateExperience.tsx", import.meta.url), "utf8");
+  assert.match(debate, /TIEMPO DE DISCUSIÓN/);
+  assert.match(debate, /Vista amplia/);
+  assert.match(debate, /Pantalla completa/);
+  assert.match(debate, /integr-debate-notes/);
+  assert.match(debate, /POSTURA PRELIMINAR DEL GRUPO/);
+});
