@@ -7,17 +7,17 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "Administrador de Curso | INTEGR",
-  description: "Programa de Habilidades Electromecánicas en cinco días. Teoría, video-lección, práctica interactiva y debates técnicos.",
+  description: "Experiencia profesional de Habilidades Electromecánicas en cinco días. Módulo I con teoría visual, manual, práctica y decisiones técnicas.",
   openGraph: {
     title: "Administrador de Curso INTEGR",
-    description: "Día 1 · Fundamentos eléctricos · Aprender, calcular y decidir",
-    images: [{ url: "https://curso-certificacion-integr.procofa-3802.chatgpt.site/og-admin.png", width: 1536, height: 1024, alt: "Administrador de Curso INTEGR - Día 1" }],
+    description: "Módulo I · Fundamentos eléctricos · Teoría visual y práctica industrial",
+    images: [{ url: "https://curso-certificacion-integr.procofa-3802.chatgpt.site/og-professional.png", width: 1536, height: 1024, alt: "Módulo I - Fundamentos Eléctricos INTEGR" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Administrador de Curso INTEGR",
     description: "Día 1 · Fundamentos eléctricos",
-    images: ["https://curso-certificacion-integr.procofa-3802.chatgpt.site/og-admin.png"],
+    images: ["https://curso-certificacion-integr.procofa-3802.chatgpt.site/og-professional.png"],
   },
 };
 

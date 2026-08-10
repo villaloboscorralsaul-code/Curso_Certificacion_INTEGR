@@ -28,14 +28,14 @@ test("keeps the learning experiences and source material wired", async () => {
   const [page, layout, sourcePdf, socialCard] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../public/habilidades-electromecanicas.pdf", import.meta.url)),
-    readFile(new URL("../public/og-admin.png", import.meta.url)),
+    readFile(new URL("../public/modulo-1-dia-1.pdf", import.meta.url)),
+    readFile(new URL("../public/og-professional.png", import.meta.url)),
   ]);
   assert.match(page, /type Stage = "caso" \| "debate" \| "incisos"/);
   assert.match(page, /integr-day1-completed/);
   assert.match(page, /speechSynthesis/);
   assert.match(page, /Ppérdida = I² × Rtotal/);
-  assert.match(layout, /og-admin\.png/);
+  assert.match(layout, /og-professional\.png/);
   assert.ok(sourcePdf.byteLength > 1_000_000);
   assert.ok(socialCard.byteLength > 100_000);
 });
