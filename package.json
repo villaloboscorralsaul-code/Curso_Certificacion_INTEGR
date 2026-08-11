@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vinext dev",
     "build": "node scripts/prepare-video.mjs && vinext build",
+    "build:netlify": "node scripts/prepare-video.mjs && vite build",
     "start": "vinext start",
     "local": "node scripts/local-dev.mjs",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
@@ -31,6 +32,7 @@
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
+    "nitro": "^3.0.260610-beta",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.2.108",
     "react-server-dom-webpack": "19.2.6",

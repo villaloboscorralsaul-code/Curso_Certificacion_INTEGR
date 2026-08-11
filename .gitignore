@@ -3,6 +3,7 @@
 /site-version.tar.gz
 /.npm-cache/
 /.vinext/
+/.netlify/
 /.wrangler/
 /dist/
 /node_modules/
