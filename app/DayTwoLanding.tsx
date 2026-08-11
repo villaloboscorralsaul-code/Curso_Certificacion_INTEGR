@@ -11,7 +11,7 @@ type Props = {
 const items: { id: DayTwoSection; number: string; short: string; label: string; detail: string }[] = [
   { id: "teoria", number: "01", short: "Manual", label: "Teoría", detail: "43 páginas · PDF oficial" },
   { id: "video", number: "02", short: "Multimedia", label: "Video-lección", detail: "Sistemas electromecánicos" },
-  { id: "practica", number: "03", short: "Laboratorio", label: "Práctica", detail: "Diagrama unifilar guiado" },
+  { id: "practica", number: "03", short: "Videos", label: "Práctica", detail: "2 ejemplos de diagrama unifilar" },
   { id: "debate", number: "04", short: "Decisiones", label: "Debate", detail: "5 casos técnicos" },
 ];
 
@@ -30,7 +30,7 @@ export default function DayTwoLanding({ onOpen, onBack, completed }: Props) {
         </div>
       </div>
       <div className="hero-photo">
-        <img src="/og-professional.png" alt="Tablero eléctrico y motor industrial"/>
+        <img src="/day2-hero.png" alt="Módulo II: sistemas eléctricos industriales"/>
         <div className="photo-caption"><span>ENTORNO DE APRENDIZAJE</span><b>De la fuente al diagnóstico</b></div>
         <div className="floating-reading"><small>RUTA INDUSTRIAL</small><b>480 <span>V AC</span></b><em>Fuente · MCC · motor</em></div>
       </div>
