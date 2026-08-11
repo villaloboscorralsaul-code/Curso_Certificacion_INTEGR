@@ -1,0 +1,24 @@
+.slide-deck{margin:22px 0;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.slide-deck-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.slide-deck-head span{color:var(--blue)}
+.slide-deck-head b{margin-right:auto}
+.slide-deck-present{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:800;font-size:11px;letter-spacing:normal;text-transform:none;color:var(--ink)}
+.slide-deck-present:hover{background:var(--cream)}
+.slide-deck-frame{width:100%;background:var(--navy);border-radius:14px;overflow:hidden;aspect-ratio:16/9}
+.slide-deck-frame img{width:100%;height:100%;object-fit:contain;display:block}
+.slide-deck-caption{margin:12px 2px 0;color:var(--muted);font-size:13px;text-align:center}
+.slide-deck-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
+.slide-deck-controls>button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:700;font-size:13px;color:var(--ink)}
+.slide-deck-controls>button:hover:not(:disabled){background:var(--cream)}
+.slide-deck-controls>button:disabled{opacity:.35;cursor:default}
+.slide-deck-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:55%}
+.slide-deck-dots button{width:8px;height:8px;border-radius:50%;border:0;background:var(--line);padding:0;cursor:pointer}
+.slide-deck-dots button.active{background:var(--navy);width:20px;border-radius:5px}
+.slide-deck-presenting{position:fixed;inset:0;z-index:90;margin:0;border-radius:0;display:flex;flex-direction:column;justify-content:center;padding:5vh 6vw;background:#050f19}
+.slide-deck-presenting .slide-deck-head{position:absolute;top:20px;left:24px;right:24px;margin:0;color:#9fb2bd}
+.slide-deck-presenting .slide-deck-frame{aspect-ratio:auto;flex:1;background:transparent}
+.slide-deck-presenting .slide-deck-controls{position:absolute;bottom:24px;left:24px;right:24px}
+.slide-deck-presenting .slide-deck-controls>button{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#fff}
+.slide-deck-presenting .slide-deck-dots button{background:rgba(255,255,255,.25)}
+.slide-deck-presenting .slide-deck-dots button.active{background:#fff}
+@media(max-width:800px){.slide-deck{margin:16px 0;padding:14px}.slide-deck-dots{max-width:100%}}

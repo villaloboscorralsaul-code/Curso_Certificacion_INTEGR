@@ -1,0 +1,13 @@
+.sidebar-collapse-handle{display:none}
+.sidebar-expand{display:none}
+@media(min-width:761px){
+  .sidebar{transition:transform .28s ease}
+  .sidebar.collapsed{transform:translateX(-100%)}
+  .workspace{transition:margin-left .28s ease}
+  .workspace.sidebar-collapsed{margin-left:0}
+  .sidebar-collapse-handle{display:grid;place-items:center;position:absolute;top:24px;right:-14px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;font-size:14px;box-shadow:0 6px 14px rgba(12,42,63,.16);z-index:31}
+  .sidebar-collapse-handle:hover{border-color:var(--orange);color:var(--orange)}
+  .sidebar.collapsed .sidebar-collapse-handle{display:none}
+  .sidebar-expand{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;color:var(--navy);width:34px;height:34px;border-radius:8px;cursor:pointer;margin-right:14px;font-size:15px}
+  .sidebar-expand:hover{border-color:var(--orange);color:var(--orange)}
+}

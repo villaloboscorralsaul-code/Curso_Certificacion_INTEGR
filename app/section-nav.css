@@ -1,0 +1,12 @@
+.section-nav{display:flex;gap:6px;margin:22px 42px 0;padding:6px;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.section-nav button{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border:0;background:transparent;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);transition:background .15s ease,color .15s ease}
+.section-nav button:hover{background:var(--cream)}
+.section-nav button span{font-size:10px;opacity:.6;font-weight:800}
+.section-nav button.done{color:var(--green)}
+.section-nav button.done i{color:var(--green);font-style:normal}
+.section-nav button.active{background:var(--navy);color:#fff}
+.section-nav button.active:hover{background:var(--navy)}
+.section-nav button.active span{opacity:.8;color:#ffc19f}
+.section-nav button.active.done i{color:#8fe6c8}
+.section-nav button i{font-style:normal;font-size:12px}
+@media(max-width:800px){.section-nav{margin:16px 18px 0}.section-nav button{font-size:11px;padding:10px 4px;gap:4px}.section-nav button span{display:none}}

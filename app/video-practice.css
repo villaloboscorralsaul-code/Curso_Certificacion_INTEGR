@@ -1,0 +1,11 @@
+.video-practice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.video-practice-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.video-practice-frame{position:relative;aspect-ratio:16/9;background:var(--navy)}
+.video-practice-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video-practice-copy{padding:20px 22px}
+.video-practice-copy span{font-size:10px;font-weight:900;letter-spacing:.12em;color:var(--blue);text-transform:uppercase}
+.video-practice-copy h3{margin:8px 0 8px;font-size:19px;line-height:1.25;color:var(--ink)}
+.video-practice-copy p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.video-practice-copy a{display:inline-block;margin-top:14px;color:var(--blue);font-size:12px;font-weight:800;text-decoration:none}
+.video-practice-copy a:hover{text-decoration:underline}
+@media(max-width:850px){.video-practice-grid{grid-template-columns:1fr}}

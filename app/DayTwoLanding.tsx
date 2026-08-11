@@ -6,19 +6,20 @@ type Props = {
   onOpen: (id: DayTwoSection) => void;
   onBack: () => void;
   completed: DayTwoSection[];
+  debateAnswers: number;
 };
 
 const items: { id: DayTwoSection; number: string; short: string; label: string; detail: string }[] = [
   { id: "teoria", number: "01", short: "Manual", label: "Teoría", detail: "43 páginas · PDF oficial" },
   { id: "video", number: "02", short: "Multimedia", label: "Video-lección", detail: "Electricidad industrial" },
-  { id: "practica", number: "03", short: "Videos", label: "Práctica", detail: "2 ejemplos de diagrama unifilar" },
+  { id: "practica", number: "03", short: "Videos", label: "Práctica", detail: "5 videos: unifilares, MCC, tierra, protecciones" },
   { id: "debate", number: "04", short: "Decisiones", label: "Debate", detail: "5 casos técnicos" },
 ];
 
-export default function DayTwoLanding({ onOpen, onBack, completed }: Props) {
+export default function DayTwoLanding({ onOpen, onBack, completed, debateAnswers }: Props) {
   const progress = Math.round((completed.length / items.length) * 100);
 
-  return <div className="page-content dashboard day2-landing">
+  return <div className="page-content dashboard">
     <div className="hero-panel">
       <div className="hero-copy">
         <div className="eyebrow"><span>DÍA 2</span> MÓDULO II · 9 HORAS</div>
@@ -39,7 +40,7 @@ export default function DayTwoLanding({ onOpen, onBack, completed }: Props) {
     <div className="metric-grid">
       <article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>2 de 5 días</b><p>Día 2 disponible para cursar.</p></div></article>
       <article><span className="metric-icon amber">◒</span><div><small>RUTA DEL DÍA 2</small><b>{completed.length} de 4 etapas</b><p>{progress ? "Continúa donde lo dejaste." : "Comienza con la teoría."}</p></div></article>
-      <article><span className="metric-icon green">✓</span><div><small>DEBATE TÉCNICO</small><b>{completed.includes("debate") ? "5 de 5 casos" : "0 de 5 casos"}</b><p>Diagnóstico y seguridad eléctrica.</p></div></article>
+      <article><span className="metric-icon green">✓</span><div><small>DEBATE TÉCNICO</small><b>{debateAnswers} de 5 casos</b><p>Diagnóstico y seguridad eléctrica.</p></div></article>
     </div>
 
     <section className="course-orientation">
@@ -47,7 +48,7 @@ export default function DayTwoLanding({ onOpen, onBack, completed }: Props) {
       <ol>
         <li><span>01</span><p><b>Comprende</b>Estudia la teoría y consulta el manual.</p></li>
         <li><span>02</span><p><b>Observa</b>Relaciona el video con la instalación.</p></li>
-        <li><span>03</span><p><b>Practica</b>Lee el unifilar paso a paso.</p></li>
+        <li><span>03</span><p><b>Practica</b>Reconoce equipos y diagramas en video.</p></li>
         <li><span>04</span><p><b>Decide</b>Defiende tu criterio técnico.</p></li>
       </ol>
     </section>
