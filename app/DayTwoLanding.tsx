@@ -10,7 +10,7 @@ type Props = {
 
 const items: { id: DayTwoSection; number: string; short: string; label: string; detail: string }[] = [
   { id: "teoria", number: "01", short: "Manual", label: "Teoría", detail: "43 páginas · PDF oficial" },
-  { id: "video", number: "02", short: "Multimedia", label: "Video-lección", detail: "Sistemas electromecánicos" },
+  { id: "video", number: "02", short: "Multimedia", label: "Video-lección", detail: "Electricidad industrial" },
   { id: "practica", number: "03", short: "Videos", label: "Práctica", detail: "2 ejemplos de diagrama unifilar" },
   { id: "debate", number: "04", short: "Decisiones", label: "Debate", detail: "5 casos técnicos" },
 ];
