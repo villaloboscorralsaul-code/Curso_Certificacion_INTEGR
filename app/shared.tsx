@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 const introMeta: Record<string, { time: string; result: string }> = {
   "01": { time: "6 h de aprendizaje", result: "Manual + presentación" },
@@ -32,6 +32,14 @@ export function SectionNav({ active, completed, onSelect }: { active: SectionId;
       <span>{String(index + 1).padStart(2, "0")}</span><b>{item.label}</b>{completed.includes(item.id) && <i>✓</i>}
     </button>)}
   </nav>;
+}
+
+export function ManualBanner({ dayLabel, moduleLabel, moduleTitle, pdfHref, pdfTitle, pageCount, sessionCount, sessionsLabel = "Sesiones", badgeLabel, summaryTitle = "Consulta la teoría completa cuando la necesites", summaryCopy = "Incluye objetivos, competencias, desarrollo teórico, ejemplos industriales, actividades guiadas y evidencias de aprendizaje para todas las sesiones.", coverLabel = "Manual completo", checklistHref, checklistLabel }: { dayLabel: string; moduleLabel: string; moduleTitle: ReactNode; pdfHref: string; pdfTitle: string; pageCount: number; sessionCount: number; sessionsLabel?: string; badgeLabel?: string; summaryTitle?: string; summaryCopy?: string; coverLabel?: string; checklistHref?: string; checklistLabel?: string }) {
+  const [manualOpen, setManualOpen] = useState(false);
+  return <>
+    <section className="manual-banner"><div className="manual-cover"><span>{moduleLabel}</span><b>{moduleTitle}</b><small>{coverLabel} · {pageCount} páginas</small></div><div className="manual-summary"><span>{badgeLabel ?? `DOCUMENTO OFICIAL DEL ${dayLabel}`}</span><h3>{summaryTitle}</h3><p>{summaryCopy}</p><div><button className="primary" onClick={() => setManualOpen(true)}>Leer dentro del curso <span>↗</span></button><a href={pdfHref} target="_blank">Abrir PDF en otra pestaña</a>{checklistHref && <a href={checklistHref} target="_blank">{checklistLabel ?? "Abrir checklist"} ↗</a>}</div></div><div className="manual-stats"><div><b>{String(sessionCount).padStart(2, "0")}</b><span>{sessionsLabel}</span></div><div><b>{pageCount}</b><span>Páginas</span></div><div><b>09h</b><span>Duración</span></div></div></section>
+    {manualOpen && <div className="manual-modal" role="dialog" aria-modal="true" aria-label={pdfTitle}><button className="modal-backdrop" onClick={() => setManualOpen(false)} aria-label="Cerrar manual" /><div className="pdf-window"><header><div><span>{moduleLabel} · {dayLabel}</span><b>{moduleTitle}</b></div><a href={pdfHref} target="_blank">Abrir aparte ↗</a><button onClick={() => setManualOpen(false)} aria-label="Cerrar">×</button></header><iframe title={pdfTitle} src={`${pdfHref}#view=FitH`} /></div></div>}
+  </>;
 }
 
 export type Slide = { src: string; alt: string };

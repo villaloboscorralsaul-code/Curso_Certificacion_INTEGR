@@ -5,6 +5,9 @@ import DebateExperience from "./DebateExperience";
 import LearningCoach from "./LearningCoach";
 import PracticeExperience, { day1Labs, day1InitialValues } from "./PracticeExperience";
 import DayTwoExperience from "./DayTwoExperience";
+import DayThreeExperience from "./DayThreeExperience";
+import DayFourExperience from "./DayFourExperience";
+import DayFiveExperience from "./DayFiveExperience";
 import LoginGate from "./LoginGate";
 import TheoryStudio from "./TheoryStudio";
 import VideoSlides from "./VideoSlides";
@@ -25,14 +28,14 @@ const theorySlides: Slide[] = [
   { src: "/slides/dia1/slide-12.jpg", alt: "Cierre del Módulo I — Metodología de 6 Pasos" },
 ];
 
-type View = "inicio" | "teoria" | "video" | "practica" | "debate" | "dia2";
+type View = "inicio" | "teoria" | "video" | "practica" | "debate" | "dia2" | "dia3" | "dia4" | "dia5";
 
 const days = [
   { day: 1, title: "Fundamentos eléctricos", hours: "6 h teoría · 3 h práctica", status: "Publicado", active: true },
-  { day: 2, title: "Sistemas eléctricos industriales", hours: "6 h teoría · 3 h práctica", status: "Programado" },
-  { day: 3, title: "Instrumentación y seguridad", hours: "5 h teoría · 4 h práctica", status: "Programado" },
-  { day: 4, title: "Sistemas mecánicos", hours: "6 h teoría · 3 h práctica", status: "Programado" },
-  { day: 5, title: "Electrónica industrial", hours: "3 h teoría · 3 h práctica", status: "Programado" },
+  { day: 2, title: "Sistemas eléctricos industriales", hours: "6 h teoría · 3 h práctica", status: "Publicado" },
+  { day: 3, title: "Instrumentación y seguridad", hours: "5 h teoría · 4 h práctica", status: "Publicado" },
+  { day: 4, title: "Sistemas mecánicos", hours: "6 h teoría · 3 h práctica", status: "Publicado" },
+  { day: 5, title: "Proyecto integrador", hours: "4 h práctica integradora", status: "Publicado" },
 ];
 
 const sections: { id: View; label: string; short: string; detail: string; icon: string }[] = [
@@ -58,6 +61,12 @@ export default function CourseAdmin() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [dayTwoProgress, setDayTwoProgress] = useState(0);
   const [dayTwoResetToken, setDayTwoResetToken] = useState(0);
+  const [dayThreeProgress, setDayThreeProgress] = useState(0);
+  const [dayThreeResetToken, setDayThreeResetToken] = useState(0);
+  const [dayFourProgress, setDayFourProgress] = useState(0);
+  const [dayFourResetToken, setDayFourResetToken] = useState(0);
+  const [dayFiveProgress, setDayFiveProgress] = useState(0);
+  const [dayFiveResetToken, setDayFiveResetToken] = useState(0);
 
   function refreshAnswers() { const saved = localStorage.getItem("integr-day1-debates"); setAnswers(saved ? JSON.parse(saved) : {}); }
   useEffect(() => { const saved = localStorage.getItem("integr-day1-completed"); if (saved) setCompleted(JSON.parse(saved)); refreshAnswers(); }, []);
@@ -68,21 +77,29 @@ export default function CourseAdmin() {
   function go(next: View) { if (next === "inicio") refreshAnswers(); setView(next); setMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }
   function markDone(id: View) { const next = completed.includes(id) ? completed.filter((item) => item !== id) : [...completed, id]; setCompleted(next); localStorage.setItem("integr-day1-completed", JSON.stringify(next)); }
   function openDayTwo() { setDayTwoResetToken((token) => token + 1); go("dia2"); }
+  function openDayThree() { setDayThreeResetToken((token) => token + 1); go("dia3"); }
+  function openDayFour() { setDayFourResetToken((token) => token + 1); go("dia4"); }
+  function openDayFive() { setDayFiveResetToken((token) => token + 1); go("dia5"); }
+  const dayOpeners: Record<number, () => void> = { 2: openDayTwo, 3: openDayThree, 4: openDayFour, 5: openDayFive };
+  const dayViews: Record<number, View> = { 2: "dia2", 3: "dia3", 4: "dia4", 5: "dia5" };
+  const otherDayProgress: Record<number, number> = { 2: dayTwoProgress, 3: dayThreeProgress, 4: dayFourProgress, 5: dayFiveProgress };
+  const activeDay = Object.keys(dayViews).map(Number).find((d) => dayViews[d] === view);
+  const activeDayProgress = activeDay ? otherDayProgress[activeDay] : progress;
 
   return <LoginGate><main className="admin-shell">
     <aside className={`sidebar ${menuOpen ? "open" : ""} ${sidebarCollapsed ? "collapsed" : ""}`}><button className="close-menu" onClick={() => setMenuOpen(false)} aria-label="Cerrar menú">×</button>
       <button className="sidebar-collapse-handle" onClick={toggleSidebar} aria-label="Ocultar menú lateral">‹</button>
       <button className="brand" onClick={() => go("inicio")}><img src="/integr-logo.png" alt="INTEGR"/><span><b>Course OS</b><small>Administrador</small></span></button>
       <div className="side-label">NAVEGACIÓN</div><button className={`side-link ${view === "inicio" ? "selected" : ""}`} onClick={() => go("inicio")}><span>⌂</span> Resumen del curso</button>
-      <div className="side-label course-label">PLAN DE 5 DÍAS <em>2 / 5</em></div><div className="day-list">{days.map((day) => { const available = day.active || day.day === 2; const selected = day.day === 2 ? view === "dia2" : day.day === 1 && view !== "dia2"; return <button key={day.day} disabled={!available} className={`day-button ${selected ? "current" : available ? "available" : "locked"}`} onClick={() => day.day === 2 ? openDayTwo() : day.active && go("inicio")}><span className="day-number">{String(day.day).padStart(2,"0")}</span><span><b>Día {day.day}</b><small>{day.title}</small></span><i>{available ? "●" : "◌"}</i></button> })}</div>
-      <div className="sidebar-footer"><div className="mini-progress"><span style={{width:`${view === "dia2" ? dayTwoProgress : progress}%`}}/></div><div><span>Progreso Día {view === "dia2" ? "2" : "1"}</span><b>{view === "dia2" ? dayTwoProgress : progress}%</b></div></div>
+      <div className="side-label course-label">PLAN DE 5 DÍAS <em>5 / 5</em></div><div className="day-list">{days.map((day) => { const available = day.active || !!dayOpeners[day.day]; const otherView = dayViews[day.day]; const selected = otherView ? view === otherView : day.day === 1 && !activeDay; return <button key={day.day} disabled={!available} className={`day-button ${selected ? "current" : available ? "available" : "locked"}`} onClick={() => dayOpeners[day.day] ? dayOpeners[day.day]() : day.active && go("inicio")}><span className="day-number">{String(day.day).padStart(2,"0")}</span><span><b>Día {day.day}</b><small>{day.title}</small></span><i>{available ? "●" : "◌"}</i></button> })}</div>
+      <div className="sidebar-footer"><div className="mini-progress"><span style={{width:`${activeDayProgress}%`}}/></div><div><span>Progreso Día {activeDay ?? 1}</span><b>{activeDayProgress}%</b></div></div>
     </aside>{menuOpen && <button className="menu-backdrop" onClick={() => setMenuOpen(false)} aria-label="Cerrar menú"/>}
-    <section className={`workspace ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}><header className="topbar"><button className="menu-toggle" onClick={() => setMenuOpen(true)} aria-label="Abrir menú">☰</button>{sidebarCollapsed && <button className="sidebar-expand" onClick={toggleSidebar} aria-label="Mostrar menú lateral">☰</button>}<div className="crumbs"><span>Habilidades electromecánicas</span><b>/</b><strong>{view === "inicio" ? "Día 1" : view === "dia2" ? "Día 2" : sections.find((item) => item.id === view)?.label}</strong></div><div className="top-actions"><span className="live-dot">Publicado</span><button className="avatar" aria-label="Perfil del administrador">SG</button></div></header>
+    <section className={`workspace ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}><header className="topbar"><button className="menu-toggle" onClick={() => setMenuOpen(true)} aria-label="Abrir menú">☰</button>{sidebarCollapsed && <button className="sidebar-expand" onClick={toggleSidebar} aria-label="Mostrar menú lateral">☰</button>}<div className="crumbs"><span>Habilidades electromecánicas</span><b>/</b><strong>{view === "inicio" ? "Día 1" : activeDay ? `Día ${activeDay}` : sections.find((item) => item.id === view)?.label}</strong></div><div className="top-actions"><span className="live-dot">Publicado</span><button className="avatar" aria-label="Perfil del administrador">SG</button></div></header>
       {(view === "teoria" || view === "video" || view === "practica" || view === "debate") && <SectionNav active={view as SectionId} completed={completed.filter((item): item is SectionId => item !== "inicio" && item !== "dia2")} onSelect={(id) => go(id)} />}
       {view === "inicio" && <div className="page-content dashboard"><span className="sr-only">Programa de cinco días</span>
         <div className="hero-panel"><div className="hero-copy"><div className="eyebrow"><span>DÍA 1</span> MÓDULO I · 9 HORAS</div><h1>Fundamentos<br/><em>eléctricos</em></h1><p>Una experiencia completa para comprender, calcular, medir y defender decisiones eléctricas con criterio técnico.</p><div className="hero-actions"><button className="primary" onClick={() => go("teoria")}>Abrir experiencia <span>→</span></button><a className="secondary" href="/modulo-1-dia-1.pdf" target="_blank">Ver manual del módulo ↗</a></div></div>
           <div className="hero-photo"><img src="/og-professional.png" alt="Laboratorio industrial con tablero eléctrico, multímetro y motor"/><div className="photo-caption"><span>ENTORNO DE APRENDIZAJE</span><b>Del fundamento al diagnóstico</b></div><div className="floating-reading"><small>LECTURA DE REFERENCIA</small><b>480 <span>V AC</span></b><em>3 fases · 60 Hz</em></div></div></div>
-        <div className="metric-grid"><article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>1 de 5 días</b><p>Los próximos módulos están programados.</p></div></article><article><span className="metric-icon amber">◒</span><div><small>RUTA DEL DÍA 1</small><b>{completed.length} de 4 etapas</b><p>{progress ? "Continúa donde lo dejaste." : "Comienza con la teoría."}</p></div></article><article><span className="metric-icon green">✓</span><div><small>DEBATES RESUELTOS</small><b>{Object.keys(answers).length} de 5 casos</b><p>Decisiones guardadas en este equipo.</p></div></article></div>
+        <div className="metric-grid"><article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>5 de 5 días</b><p>Los cinco días del curso están publicados.</p></div></article><article><span className="metric-icon amber">◒</span><div><small>RUTA DEL DÍA 1</small><b>{completed.length} de 4 etapas</b><p>{progress ? "Continúa donde lo dejaste." : "Comienza con la teoría."}</p></div></article><article><span className="metric-icon green">✓</span><div><small>DEBATES RESUELTOS</small><b>{Object.keys(answers).length} de 5 casos</b><p>Decisiones guardadas en este equipo.</p></div></article></div>
         <section className="course-orientation"><div><span>CÓMO UTILIZAR ESTE DÍA</span><h2>Aprende sin perderte</h2><p>Cada etapa responde una pregunta distinta. Avanza en orden y marca tu progreso al terminar.</p></div><ol><li><span>01</span><p><b>Comprende</b>Lee la teoría visual y consulta el manual.</p></li><li><span>02</span><p><b>Observa</b>Mira la video-lección con narración.</p></li><li><span>03</span><p><b>Practica</b>Calcula con guía y recibe interpretación.</p></li><li><span>04</span><p><b>Decide</b>Defiende tu criterio en cinco casos.</p></li></ol></section>
         <section className="section-block"><div className="section-heading"><div><span>RUTA DE APRENDIZAJE</span><h2>Todo el Día 1, en orden</h2></div><p>La teoría habilita el contexto; la práctica convierte fórmulas en decisiones.</p></div><div className="learning-path">{sections.map((item,index) => <button key={item.id} onClick={() => go(item.id)} className={completed.includes(item.id)?"done":""}><span className="step-no">{item.icon}</span><span className="step-copy"><small>{item.short}</small><b>{item.label}</b><em>{item.detail}</em></span><span className="step-status">{completed.includes(item.id)?"✓":"→"}</span>{index<sections.length-1&&<i className="connector"/>}</button>)}</div></section>
       </div>}
@@ -90,6 +107,9 @@ export default function CourseAdmin() {
       {view === "video" && <VideoSlides overline="VIDEO-LECCIÓN" introTitle="De la carga al diagnóstico" introCopy="Reproduce el video completo del Módulo I. Consulta la presentación y el manual en la sección de Teoría cuando quieras repasar un concepto." featureLabel="VIDEO PRINCIPAL · MÓDULO I" featureTitle="Sistemas electromecánicos, explicados paso a paso" featureCopy="Reproduce el video completo para obtener una vista general de los fundamentos eléctricos aplicados a planta." videoSrc="/sistemas-electromecanicos.mp4" poster="/og-professional.png" videoAriaLabel="Video de lección Sistemas Electromecánicos" completed={completed.includes("video")} onDone={() => markDone("video")} />}
       {view === "practica" && <PracticeExperience labs={day1Labs} initialValues={day1InitialValues} storageKey="integr-practice-labs" eyebrow="03 · PRÁCTICA GUIADA" heading="Laboratorio eléctrico" subheading="Una tarea por pantalla. Comprende, calcula, interpreta y comprueba." menuLabel="ELIGE UN LABORATORIO" completed={completed.includes("practica")} onComplete={() => !completed.includes("practica") && markDone("practica")} />}
       {view === "dia2" && <DayTwoExperience onBack={() => go("inicio")} onProgressChange={setDayTwoProgress} resetToken={dayTwoResetToken} />}
+      {view === "dia3" && <DayThreeExperience onBack={() => go("inicio")} onProgressChange={setDayThreeProgress} resetToken={dayThreeResetToken} />}
+      {view === "dia4" && <DayFourExperience onBack={() => go("inicio")} onProgressChange={setDayFourProgress} resetToken={dayFourResetToken} />}
+      {view === "dia5" && <DayFiveExperience onBack={() => go("inicio")} onProgressChange={setDayFiveProgress} resetToken={dayFiveResetToken} />}
       {view === "debate" && <DebateExperience debates={debates} completed={completed.includes("debate")} onComplete={() => markDone("debate")} onBack={() => go("inicio")} />}
       <LearningCoach view={view}/>
     </section>

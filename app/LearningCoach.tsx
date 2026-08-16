@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type View = "inicio" | "teoria" | "video" | "practica" | "debate" | "dia2";
+type View = "inicio" | "teoria" | "video" | "practica" | "debate" | "dia2" | "dia3" | "dia4" | "dia5";
 type Props = { view: View };
 
 const guides: Record<View, { title: string; purpose: string; steps: string[]; finish: string }> = {
@@ -12,6 +12,9 @@ const guides: Record<View, { title: string; purpose: string; steps: string[]; fi
   practica: { title: "Cómo usar el laboratorio", purpose: "La calculadora enseña el proceso, no solo entrega un número.", steps: ["Selecciona un laboratorio", "Cambia un dato a la vez", "Observa qué cambia", "Interpreta y completa el reto"], finish: "Terminas cuando sabes qué representa el resultado y qué revisarías en campo." },
   debate: { title: "Cómo participar en el debate", purpose: "Primero construye criterio; después compara tu decisión con los incisos.", steps: ["Lee o escucha el caso", "Identifica evidencia y riesgos", "Vota una postura preliminar", "Revela los incisos y decide"], finish: "Terminas al resolver los cinco casos y explicar por qué elegiste cada respuesta." },
   dia2: { title: "Tu ruta del Día 2", purpose: "Aquí ves todo lo que aprenderás en el Módulo II y el avance que ya guardaste.", steps: ["Comienza en Teoría", "Continúa con el video", "Revisa la práctica en video", "Termina con el debate técnico"], finish: "Completa las cuatro etapas; puedes regresar cuando quieras." },
+  dia3: { title: "Tu ruta del Día 3", purpose: "Aquí ves todo lo que aprenderás en el Módulo III y el avance que ya guardaste.", steps: ["Comienza en Teoría", "Continúa con el video", "Revisa la práctica en video", "Termina con el debate técnico"], finish: "Completa las cuatro etapas; puedes regresar cuando quieras." },
+  dia4: { title: "Tu ruta del Día 4", purpose: "Aquí ves todo lo que aprenderás en el Módulo IV y el avance que ya guardaste.", steps: ["Comienza en Teoría", "Continúa con el video", "Revisa la práctica en video", "Termina con el debate técnico"], finish: "Completa las cuatro etapas; puedes regresar cuando quieras." },
+  dia5: { title: "Tu ruta del Día 5", purpose: "El Día 5 es distinto: no hay teoría ni video, es un solo proyecto integrador por equipos.", steps: ["Lee el caso integrador del CT-401", "Recorre las 4 estaciones en orden", "Consulta la guía y el checklist cuando lo necesites", "Entrega el reporte de diagnóstico final"], finish: "Termina cuando tu equipo entregue el reporte con los 14 puntos y el instructor complete el checklist de evaluación." },
 };
 
 export default function LearningCoach({ view }: Props) {
