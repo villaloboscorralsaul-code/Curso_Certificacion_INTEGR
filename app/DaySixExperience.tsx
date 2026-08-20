@@ -37,6 +37,12 @@ const theorySlides: Slide[] = [
 
 type Tab = "overview" | DaySixSection;
 
+const referenceVideos = [
+  { id: "TaLDbcR4Pek", title: "Cómo funciona un power pack hidráulico", caption: "Animación 3D del recorrido completo del fluido: depósito, bomba, válvulas y actuador." },
+  { id: "qlR4ZvCup9A", title: "Mecánica de un cilindro hidráulico", caption: "Vista interna animada de cómo un cilindro convierte presión en fuerza y movimiento." },
+  { id: "vGXjZNmK8ps", title: "Cómo funciona una válvula direccional", caption: "Explica cómo una válvula direccional dirige el flujo hacia avance, retroceso o neutro." },
+];
+
 const debates = [
   { code: "H-01", title: "El cilindro que perdió fuerza", case: "Un cilindro de prensa hidráulica que normalmente cierra con firmeza ahora avanza, pero se detiene antes de completar el ciclo y no logra la fuerza necesaria. La bomba suena normal y el nivel de aceite está correcto.", prompt: "¿Qué deberían revisar primero: la bomba, la válvula de alivio o el propio cilindro? ¿Qué evidencia ayuda a decidir?", lenses: ["Fuga interna vs. fuga externa", "Ajuste de la válvula de alivio", "Desgaste de sellos del cilindro", "Presión disponible vs. presión requerida"], options: ["Cambiar la bomba de inmediato porque es el componente más caro y crítico.", "Medir la presión en el manómetro durante el ciclo: si no alcanza el valor esperado, comparar válvula de alivio y posible fuga interna en el cilindro antes de intervenir la bomba.", "Aumentar el ajuste de la válvula de alivio hasta que el cilindro cierre con fuerza."], answer: 1, feedback: "Sin medir presión real durante el ciclo, cambiar la bomba es una suposición cara. La secuencia correcta es medir, comparar contra el valor esperado y correlacionar con válvula de alivio y sellos del cilindro antes de reemplazar el componente más costoso." },
   { code: "H-02", title: "Ruido de 'canicas' en la bomba", case: "Una bomba hidráulica empieza a producir un ruido agudo, como canicas dentro de una lata, poco después de que mantenimiento cambió el filtro de succión por uno de menor capacidad disponible en almacén.", prompt: "¿Qué fenómeno describe mejor este ruido? ¿Qué relación tiene con el cambio de filtro?", lenses: ["Cavitación por restricción de succión", "Capacidad de flujo del filtro", "Formación de burbujas de vapor", "Daño acumulativo a la bomba"], options: ["Es ruido normal de una bomba nueva y desaparecerá solo.", "Es probable cavitación: el filtro de menor capacidad restringe la succión, la bomba no recibe suficiente fluido y se forman burbujas que colapsan dentro de ella.", "Es un problema eléctrico del motor que impulsa la bomba."], answer: 1, feedback: "Un filtro de succión con menor capacidad que la requerida restringe el flujo hacia la bomba. Esto genera baja presión en la succión, formación de burbujas de vapor y su colapso violento (cavitación), que además daña la bomba si continúa operando así." },
@@ -60,7 +66,21 @@ export default function DaySixExperience({ onBack, onProgressChange, resetToken 
   if (tab === "overview") return <DaySixLanding onOpen={nav} onBack={onBack} completed={completed} debateAnswers={Object.keys(debateAnswers).length} />;
   return <>
     <DaySixNav active={tab as DaySixSection} completed={completed} onSelect={nav} />
-    {tab === "teoria" && <TheoryStudio dayLabel="DÍA 6" moduleLabel="MÓDULO VII" moduleTitle={<>Hidráulica<br/>industrial</>} overline="TEORÍA INTERACTIVA · PRESENTACIÓN Y MANUAL" introTitle="Hidráulica industrial, explicada visualmente" introCopy="Recorre la presentación del Módulo VII y consulta el manual completo cuando lo necesites." slides={theorySlides} sessionCount={1} pdfHref="/modulo-7-dia-6.pdf" pdfTitle="Módulo VII Día 6" pageCount={11} completed={completed.includes("teoria")} onDone={() => markDone("teoria")} />}
+    {tab === "teoria" && <>
+      <TheoryStudio dayLabel="DÍA 6" moduleLabel="MÓDULO VII" moduleTitle={<>Hidráulica<br/>industrial</>} overline="TEORÍA INTERACTIVA · PRESENTACIÓN Y MANUAL" introTitle="Hidráulica industrial, explicada visualmente" introCopy="Recorre la presentación del Módulo VII y consulta el manual completo cuando lo necesites." slides={theorySlides} sessionCount={1} pdfHref="/modulo-7-dia-6.pdf" pdfTitle="Módulo VII Día 6" pageCount={11} completed={completed.includes("teoria")} onDone={() => markDone("teoria")} />
+      <div className="page-content" style={{ paddingTop: 0 }}>
+        <section className="section-block">
+          <div className="section-heading"><div><span>RECURSOS ADICIONALES</span><h2>Videos de referencia</h2></div><p>Animaciones 3D que refuerzan los conceptos de esta sesión.</p></div>
+          <div className="video-resources">
+            {referenceVideos.map((video) => <article key={video.id}>
+              <div className="video-resources-frame"><iframe src={`https://www.youtube.com/embed/${video.id}`} title={video.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /></div>
+              <b>{video.title}</b>
+              <p>{video.caption}</p>
+            </article>)}
+          </div>
+        </section>
+      </div>
+    </>}
     {tab === "video" && <VideoSlides overline="VIDEO-LECCIÓN" introTitle="De la presión a la decisión técnica" introCopy="Reproduce el video completo del Módulo VII. Consulta la presentación y el manual en la sección de Teoría cuando quieras repasar un concepto." featureLabel="VIDEO PRINCIPAL · MÓDULO VII" featureTitle="Hidráulica industrial, explicada paso a paso" featureCopy="Reproduce el video completo para repasar presión, caudal, componentes, lectura de circuitos, diagnóstico y seguridad hidráulica." videoSrc="/hidraulica-industrial.mp4" poster="/dia6-video-poster.jpg" videoAriaLabel="Video de lección Hidráulica Industrial del Módulo VII" completed={completed.includes("video")} onDone={() => markDone("video")} />}
     {tab === "practica" && <DebateExperience debates={debates} completed={completed.includes("practica")} onComplete={() => { if (!completed.includes("practica")) markDone("practica"); }} onBack={() => nav("overview")} moduleLabel="MÓDULO VII · HIDRÁULICA" storageKey="integr-day6-debates" />}
   </>;
