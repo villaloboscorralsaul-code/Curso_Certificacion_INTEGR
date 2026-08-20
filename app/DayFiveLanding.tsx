@@ -33,7 +33,7 @@ export default function DayFiveLanding({ onOpen, onBack, completed }: Props) {
     </div>
 
     <div className="metric-grid">
-      <article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>5 de 5 días</b><p>Día 5 disponible para cursar.</p></div></article>
+      <article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>5 de 6 días</b><p>Día 5 disponible para cursar.</p></div></article>
       <article><span className="metric-icon amber">◒</span><div><small>MODALIDAD</small><b>Práctica integradora</b><p>Sin teoría ni video: es el cierre del curso.</p></div></article>
       <article><span className="metric-icon green">✓</span><div><small>EVALUACIÓN</small><b>{completed ? "Completado" : "Pendiente"}</b><p>Checklist de evaluación · 100 puntos.</p></div></article>
     </div>

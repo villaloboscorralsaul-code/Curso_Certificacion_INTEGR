@@ -4,7 +4,7 @@ import { access, readdir } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
-// Repository-safe parts directories: electricidad-industrial-parts, sistemas-electromecanicos-parts, diagnostico-y-seguridad-parts and el-detective-industrial-parts.
+// Repository-safe parts directories: electricidad-industrial-parts, sistemas-electromecanicos-parts, diagnostico-y-seguridad-parts, el-detective-industrial-parts and hidraulica-industrial-parts.
 async function joinVideo(name) {
   const partsDir = path.join(root, "public", `${name}-parts`);
   const output = path.join(root, "public", `${name}.mp4`);
@@ -18,3 +18,4 @@ await joinVideo("electricidad-industrial");
 await joinVideo("sistemas-electromecanicos");
 await joinVideo("diagnostico-y-seguridad");
 await joinVideo("el-detective-industrial");
+await joinVideo("hidraulica-industrial");

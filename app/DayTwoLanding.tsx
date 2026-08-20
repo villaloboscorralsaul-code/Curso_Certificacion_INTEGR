@@ -38,7 +38,7 @@ export default function DayTwoLanding({ onOpen, onBack, completed, debateAnswers
     </div>
 
     <div className="metric-grid">
-      <article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>2 de 5 días</b><p>Día 2 disponible para cursar.</p></div></article>
+      <article><span className="metric-icon cyan">◎</span><div><small>CONTENIDO ACTIVO</small><b>2 de 6 días</b><p>Día 2 disponible para cursar.</p></div></article>
       <article><span className="metric-icon amber">◒</span><div><small>RUTA DEL DÍA 2</small><b>{completed.length} de 4 etapas</b><p>{progress ? "Continúa donde lo dejaste." : "Comienza con la teoría."}</p></div></article>
       <article><span className="metric-icon green">✓</span><div><small>DEBATE TÉCNICO</small><b>{debateAnswers} de 5 casos</b><p>Diagnóstico y seguridad eléctrica.</p></div></article>
     </div>
